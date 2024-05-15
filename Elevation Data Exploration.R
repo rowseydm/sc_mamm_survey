@@ -130,3 +130,6 @@ all_data %>%
   write.csv(file = "SC_allmamm_georef.csv")
 
 
+all_data%>% 
+  filter(percentDeviation<300|is.na(percentDeviation)) %>%
+  glimpse()
