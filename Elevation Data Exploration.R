@@ -83,45 +83,50 @@ all_data$percentDeviation[as.numeric(names(elev_lm$residuals))] <-
 
 #####Plot DEM and Verbatim elevation while removing high-residual outliers
 #1 sd removed (most strict)
-  all_data %>%
-    filter(!is.na(residuals)) %>%
-    ggplot(aes(x = verbatimElevationInMeters, y = DEMElevationInMeters, color = recordSource)) +
-    geom_point() +
-    theme(aspect.ratio = 1) +
-    scale_x_continuous(limits = c(500, 3000)) +
-    scale_y_continuous(limits = c(500, 3000)) +
-    geom_smooth(method = lm, se = F) +
-    facet_wrap(facets = vars(percentDeviation > 100)) +
-    theme_minimal() +
-    stat_cor(label.y = c(3000, 2900, 2800), digits = 4) +
-    stat_regline_equation(label.y = c(2200, 2100, 2000)) +
-    labs(title = "verbatim vs DEM elevation, > 1 sd from mean")
+all_data %>%
+  filter(!is.na(residuals)) %>%
+  ggplot(aes(x = verbatimElevationInMeters, y = DEMElevationInMeters, color = recordSource)) +
+  geom_point() +
+  theme(aspect.ratio = 1) +
+  scale_x_continuous(limits = c(500, 3000)) +
+  scale_y_continuous(limits = c(500, 3000)) +
+  geom_smooth(method = lm, se = F) +
+  facet_wrap(facets = vars(percentDeviation > 100)) +
+  theme_minimal() +
+  stat_cor(label.y = c(3000, 2900, 2800), digits = 4) +
+  stat_regline_equation(label.y = c(2200, 2100, 2000)) +
+  labs(title = "verbatim vs DEM elevation, > 1 sd from mean")
 #2 sd removed 
-  all_data %>%
-    filter(!is.na(residuals)) %>%
-    ggplot(aes(x = verbatimElevationInMeters, y = DEMElevationInMeters, color = recordSource)) +
-    geom_point() +
-    theme(aspect.ratio = 1) +
-    scale_x_continuous(limits = c(500, 3000)) +
-    scale_y_continuous(limits = c(500, 3000)) +
-    geom_smooth(method = lm, se = F) +
-    facet_wrap(facets = vars(percentDeviation > 200)) +
-    theme_minimal() +
-    stat_cor(label.y = c(3000, 2900, 2800), digits = 4) +
-    stat_regline_equation(label.y = c(2200, 2100, 2000)) +
-    labs(title = "verbatim vs DEM elevation, > 2 sd from mean")
+all_data %>%
+  filter(!is.na(residuals)) %>%
+  ggplot(aes(x = verbatimElevationInMeters, y = DEMElevationInMeters, color = recordSource)) +
+  geom_point() +
+  theme(aspect.ratio = 1) +
+  scale_x_continuous(limits = c(500, 3000)) +
+  scale_y_continuous(limits = c(500, 3000)) +
+  geom_smooth(method = lm, se = F) +
+  facet_wrap(facets = vars(percentDeviation > 200)) +
+  theme_minimal() +
+  stat_cor(label.y = c(3000, 2900, 2800), digits = 4) +
+  stat_regline_equation(label.y = c(2200, 2100, 2000)) +
+  labs(title = "verbatim vs DEM elevation, > 2 sd from mean")
 #3 sd removed (most lenient)
-  all_data %>%
-    filter(!is.na(residuals)) %>%
-    ggplot(aes(x = verbatimElevationInMeters, y = DEMElevationInMeters, color = recordSource)) +
-    geom_point() +
-    theme(aspect.ratio = 1) +
-    scale_x_continuous(limits = c(500, 3000)) +
-    scale_y_continuous(limits = c(500, 3000)) +
-    geom_smooth(method = lm, se = F) +
-    facet_wrap(facets = vars(percentDeviation > 300)) +
-    theme_minimal() +
-    stat_cor(label.y = c(3000, 2900, 2800), digits = 4) +
-    stat_regline_equation(label.y = c(2200, 2100, 2000)) +
-    labs(title = "verbatim vs DEM elevation, > 3 sd from mean")
+all_data %>%
+  filter(!is.na(residuals)) %>%
+  ggplot(aes(x = verbatimElevationInMeters, y = DEMElevationInMeters, color = recordSource)) +
+  geom_point() +
+  theme(aspect.ratio = 1) +
+  scale_x_continuous(limits = c(500, 3000)) +
+  scale_y_continuous(limits = c(500, 3000)) +
+  geom_smooth(method = lm, se = F) +
+  facet_wrap(facets = vars(percentDeviation > 300)) +
+  theme_minimal() +
+  stat_cor(label.y = c(3000, 2900, 2800), digits = 4) +
+  stat_regline_equation(label.y = c(2200, 2100, 2000)) +
+  labs(title = "verbatim vs DEM elevation, > 3 sd from mean")
+
+#####export to new file
+all_data %>%
+  write.csv(file = "SC_allmamm_georef.csv")
+
 
