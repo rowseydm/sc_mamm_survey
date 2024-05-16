@@ -1,0 +1,1 @@
+This repository serves as a place to version control code for the 2021-2023 Santa Catalinas Small Mammal Diversity Survey. Files include R project and script files for exploratory data analysis, data cleaning, and figure generation. Contact Dakota Rowsey drowsey@asu.edu with questions
