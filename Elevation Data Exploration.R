@@ -30,10 +30,10 @@ uaz_data<-read_xlsx(path = "UAZ_Refined.xlsx") %>% #UAZ occurrence records sourc
 uaz_data_elev <- uaz_data %>% #Combine occurrence records with DEM elevation
   mutate(scientificName = paste(genus, species),
          verbatimElevationInMeters = 
-           as.numeric(stringr::str_extract(uaz_data$locality,
+           as.numeric(stringr::str_extract(locality,
                                            pattern = "[0-9]{4}"))*0.3048,
-         elevationDeviation = verbatimElevationInMeters,
          recordSource = "UAZ",
+         institutionCode = "UAZ",
          basisOfRecord = "PRESERVED_SPECIMEN") %>%
   left_join(y = uaz_elev, by = "catalogNumber") 
 
@@ -43,11 +43,11 @@ our_data<-read_xlsx(path = "AllMammalRecords_2021-23_Refined.xlsx") %>%
   mutate_at(.vars = vars(eventDate), .funs = as.Date) %>%
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude), .funs = as.numeric) %>%
   #select only needed variables
-  select(catalogNumber, order_, family, genus, species, verbatimScientificName, 
+  select(institutionCode, catalogNumber, order_, family, genus, species, 
          sex, recordedBy, recordNumber, eventDate, locality, decimalLatitude, 
          decimalLongitude, elevation, elevationDEM, basisOfRecord, recordSource) %>%
   #rename variables to conform to other data sources
-  rename(order = order_, scientificName = verbatimScientificName, 
+  rename(order = order_, scientificName = species, 
          verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM)
 
 ####3. All other records, including observations
@@ -58,17 +58,18 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude, elevation, 
                          elevationDEM), .funs = as.numeric) %>%
   #select only needed variables
-  select(catalogNumber, order_, family, genus, species, verbatimScientificName,
+  select(institutionCode, catalogNumber, order_, family, genus, species,
          recordedBy, recordNumber, eventDate, locality, decimalLatitude,
          decimalLongitude, elevation, elevationDEM, basisOfRecord) %>%
   #rename variables to conform to other data sources
-  rename(order = order_, scientificName = verbatimScientificName, 
+  rename(order = order_, scientificName = species, 
          verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM) %>%
   mutate(recordSource = "non-UAZ pre-2021")
         
 #####Combine data frames from all sources into one                      
 all_data<-full_join(uaz_data_elev, old_data) %>%
-  full_join(our_data)
+  full_join(our_data) %>%
+  filter(str_detect(scientificName, " ") & !str_detect(scientificName, " NA")) #Keep records that are identified to species
 
 #####Construct linear Model to analyze difference between tag and DEM elevation
 elev_lm<-lm(DEMElevationInMeters ~ verbatimElevationInMeters, data = all_data)
@@ -130,6 +131,56 @@ all_data %>%
   write.csv(file = "SC_allmamm_georef.csv")
 
 
-all_data%>% 
-  filter(percentDeviation<300|is.na(percentDeviation)) %>%
-  glimpse()
+sd_prune<-all_data%>% 
+  filter(percentDeviation<300|is.na(percentDeviation))
+
+
+#####
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Heteromyidae") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Cricetidae") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Sciuridae") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & order == "Carnivora") %>% 
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & order == "Artiodactyla" | 
+           basisOfRecord == "PRESERVED_SPECIMEN" & order == "Lagomorpha") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & order == "Eulipotyphla") %>% #Need to change vagrans and monticola to monticolus
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & order == "Chiroptera") %>% 
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+all_data %>%
+  filter(scientificName == "Perognathus flavus" | scientificName == "Dipodomys ordii" |
+           scientificName == "Chaetodipus penicillatus" & DEMElevationInMeters > 2000 |
+           scientificName == "Chaetodipus baileyi" & DEMElevationInMeters > 2000) %>%
+  View()
