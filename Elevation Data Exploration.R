@@ -43,11 +43,7 @@ our_data<-read_xlsx(path = "AllMammalRecords_2021-23_Refined.xlsx") %>%
   mutate_at(.vars = vars(eventDate), .funs = as.Date) %>%
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude), .funs = as.numeric) %>%
   #select only needed variables
-<<<<<<< HEAD
   select(institutionCode, catalogNumber, order_, family, genus, species, 
-=======
-  select(catalogNumber, order_, family, genus, species, 
->>>>>>> 966613bb0b0afee72c9e255b688326ec2f22af50
          sex, recordedBy, recordNumber, eventDate, locality, decimalLatitude, 
          decimalLongitude, elevation, elevationDEM, basisOfRecord, recordSource) %>%
   #rename variables to conform to other data sources
@@ -62,11 +58,7 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude, elevation, 
                          elevationDEM), .funs = as.numeric) %>%
   #select only needed variables
-<<<<<<< HEAD
   select(institutionCode, catalogNumber, order_, family, genus, species,
-=======
-  select(catalogNumber, order_, family, genus, species,
->>>>>>> 966613bb0b0afee72c9e255b688326ec2f22af50
          recordedBy, recordNumber, eventDate, locality, decimalLatitude,
          decimalLongitude, elevation, elevationDEM, basisOfRecord) %>%
   #rename variables to conform to other data sources
@@ -77,11 +69,7 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 
 #####Combine data frames from all sources into one                      
 all_data<-full_join(uaz_data_elev, old_data) %>%
   full_join(our_data) %>%
-<<<<<<< HEAD
   filter(str_detect(scientificName, " ") & !str_detect(scientificName, " NA")) #Keep records that are identified to species
-=======
-  filter(scientificName == str_detect(scientificName, " ")) #Need to figure out why some records have a space and some don't
->>>>>>> 966613bb0b0afee72c9e255b688326ec2f22af50
 
 #####Construct linear Model to analyze difference between tag and DEM elevation
 elev_lm<-lm(DEMElevationInMeters ~ verbatimElevationInMeters, data = all_data)
@@ -146,7 +134,6 @@ all_data %>%
 sd_prune<-all_data%>% 
   filter(percentDeviation<300|is.na(percentDeviation))
 
-<<<<<<< HEAD
 
 #####
 sd_prune %>%
@@ -197,11 +184,3 @@ all_data %>%
            scientificName == "Chaetodipus penicillatus" & DEMElevationInMeters > 2000 |
            scientificName == "Chaetodipus baileyi" & DEMElevationInMeters > 2000) %>%
   View()
-=======
-all_data %>%
-  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Heteromyidae") %>%
-  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
-  geom_boxplot() +
-  labs() +
-  theme_minimal()
->>>>>>> 966613bb0b0afee72c9e255b688326ec2f22af50
