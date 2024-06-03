@@ -33,7 +33,9 @@ uaz_data_elev <- uaz_data %>% #Combine occurrence records with DEM elevation
            as.numeric(stringr::str_extract(locality,
                                            pattern = "[0-9]{4}"))*0.3048,
          recordSource = "UAZ",
+         institutionCode = "UAZ",
          basisOfRecord = "PRESERVED_SPECIMEN") %>%
+  select(-species) %>%
   left_join(y = uaz_elev, by = "catalogNumber") 
 
 ####2. Records from our survey
@@ -42,7 +44,7 @@ our_data<-read_xlsx(path = "AllMammalRecords_2021-23_Refined.xlsx") %>%
   mutate_at(.vars = vars(eventDate), .funs = as.Date) %>%
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude), .funs = as.numeric) %>%
   #select only needed variables
-  select(catalogNumber, order_, family, genus, species, 
+  select(institutionCode, catalogNumber, order_, family, genus, species, 
          sex, recordedBy, recordNumber, eventDate, locality, decimalLatitude, 
          decimalLongitude, elevation, elevationDEM, basisOfRecord, recordSource) %>%
   #rename variables to conform to other data sources
@@ -57,7 +59,7 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude, elevation, 
                          elevationDEM), .funs = as.numeric) %>%
   #select only needed variables
-  select(catalogNumber, order_, family, genus, species,
+  select(institutionCode, catalogNumber, order_, family, genus, species,
          recordedBy, recordNumber, eventDate, locality, decimalLatitude,
          decimalLongitude, elevation, elevationDEM, basisOfRecord) %>%
   #rename variables to conform to other data sources
@@ -66,9 +68,9 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 
   mutate(recordSource = "non-UAZ pre-2021")
         
 #####Combine data frames from all sources into one                      
-all_data<-full_join(uaz_data_elev, old_data) %>%
-  full_join(our_data) %>%
-  filter(scientificName == str_detect(scientificName, " ")) #Need to figure out why some records have a space and some don't
+all_data<-full_join(our_data, old_data) %>%
+  full_join(uaz_data_elev) %>%
+  filter(str_detect(scientificName, " ") & !str_detect(scientificName, " NA")) #Keep records that are identified to species
 
 #####Construct linear Model to analyze difference between tag and DEM elevation
 elev_lm<-lm(DEMElevationInMeters ~ verbatimElevationInMeters, data = all_data)
@@ -133,9 +135,77 @@ all_data %>%
 sd_prune<-all_data%>% 
   filter(percentDeviation<300|is.na(percentDeviation))
 
-all_data %>%
-  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Heteromyidae") %>%
+
+#####
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family %in% c("Heteromyidae", "Geomyidae")) %>%
   ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
   geom_boxplot() +
-  labs() +
   theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Cricetidae") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Sciuridae") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & order == "Carnivora") %>% 
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & 
+           order %in% c("Artiodactyla", "Lagomorpha") ) %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & order == "Eulipotyphla") %>% #Need to change vagrans and monticola to monticolus
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+sd_prune %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & order == "Chiroptera") %>% 
+  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+  geom_boxplot() +
+  theme_minimal()
+
+all_data %>%
+  filter(scientificName %in% c("Perognathus flavus", "Dipodomys ordii") |
+           DEMElevationInMeters > 2000 & scientificName %in% 
+           c("Chaetodipus penicillatus", "Chaetodipus baileyi") |
+           DEMElevationInMeters < 2200 & scientificName == "Peromyscus maniculatus" |
+           DEMElevationInMeters < 2000 & scientificName %in% c("Neotoma mexicana", "Reithrodontomys megalotis") |
+           DEMElevationInMeters > 2000 & scientificName %in% 
+           c("Peromyscus eremicus", "Onychomys torridus", "Neotoma albigula") |
+           DEMElevationInMeters < 1000 & scientificName %in% c("Sciurus aberti", "Otospermophilus variegatus") | 
+           DEMElevationInMeters > 1500 & scientificName == "Ammospermophilus harrisii" |
+           DEMElevationInMeters > 1200 & scientificName == "Parastrellus hesperus" |
+           DEMElevationInMeters < 1000 & scientificName == "Myotis auriculus" |
+           grepl("Virginia", locality) |
+           scientificName == "Sylvilagus floridanus" | 
+           scientificName == "Spilogale putorius"
+         ) %>%
+  write.csv(file = "Elevational_Outliers.csv") #Otospermophilus in Sabino Canyon, interestingly enough
+
+all_data %>%
+  filter(DEMElevationInMeters > 1200 & scientificName == "Parastrellus hesperus" |
+           DEMElevationInMeters < 1000 & scientificName == "Myotis auriculus") %>%
+  View()
+
+all_data %>%
+  filter(DEMElevationInMeters < 1000 & scientificName %in% c("Sciurus aberti", "Otospermophilus variegatus") | 
+           DEMElevationInMeters > 1500 & scientificName == "Ammospermophilus harrisii") %>%
+  View()
+
+unique(sd_prune$family)
