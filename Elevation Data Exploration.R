@@ -139,6 +139,7 @@ sd_prune<-all_data%>%
 #####
 sd_prune %>%
   filter(basisOfRecord == "PRESERVED_SPECIMEN" & family %in% c("Heteromyidae", "Geomyidae")) %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Heteromyidae") %>%
   ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
   geom_boxplot() +
   theme_minimal()
@@ -164,7 +165,7 @@ sd_prune %>%
 sd_prune %>%
   filter(basisOfRecord == "PRESERVED_SPECIMEN" & 
            order %in% c("Artiodactyla", "Lagomorpha") ) %>%
-  ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
+    ggplot(mapping = aes(x = DEMElevationInMeters, y = scientificName)) +
   geom_boxplot() +
   theme_minimal()
 
@@ -198,14 +199,5 @@ all_data %>%
          ) %>%
   write.csv(file = "Elevational_Outliers.csv") #Otospermophilus in Sabino Canyon, interestingly enough
 
-all_data %>%
-  filter(DEMElevationInMeters > 1200 & scientificName == "Parastrellus hesperus" |
-           DEMElevationInMeters < 1000 & scientificName == "Myotis auriculus") %>%
-  View()
-
-all_data %>%
-  filter(DEMElevationInMeters < 1000 & scientificName %in% c("Sciurus aberti", "Otospermophilus variegatus") | 
-           DEMElevationInMeters > 1500 & scientificName == "Ammospermophilus harrisii") %>%
-  View()
-
 unique(sd_prune$family)
+
