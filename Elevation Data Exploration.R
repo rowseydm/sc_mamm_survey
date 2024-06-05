@@ -81,7 +81,7 @@ all_data$residuals<-NA
 all_data$residuals[as.numeric(names(elev_lm$residuals))] <- elev_lm$residuals
 all_data$percentDeviation<-NA
 all_data$percentDeviation[as.numeric(names(elev_lm$residuals))] <- 
-  (abs(elev_lm$residuals)/sd(elev_lm$residuals)*100)
+  ((abs(elev_lm$residuals)/sd(elev_lm$residuals))*100)
 
 #####Plot DEM and Verbatim elevation while removing high-residual outliers
 #1 sd removed (most strict)
@@ -196,8 +196,7 @@ all_data %>%
            grepl("Virginia", locality) |
            scientificName == "Sylvilagus floridanus" | 
            scientificName == "Spilogale putorius"
-         ) %>%
-  write.csv(file = "Elevational_Outliers.csv") #Otospermophilus in Sabino Canyon, interestingly enough
+         ) #%>%
+  #write.csv(file = "Elevational_Outliers.csv") #Otospermophilus in Sabino Canyon, interestingly enough
 
-unique(sd_prune$family)
 
