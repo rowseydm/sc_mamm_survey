@@ -51,6 +51,16 @@ our_data<-read_xlsx(path = "AllMammalRecords_2021-23_Refined.xlsx") %>%
   rename(order = order_, scientificName = species, 
          verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM)
 
+our_data_vouchers<-our_data %>%
+  filter(basisOfRecord == "PRESERVED_SPECIMEN")
+our_data_uniqueTissues<-our_data %>%
+  filter(basisOfRecord == "MATERIAL_SAMPLE") %>%
+  distinct(recordNumber, .keep_all = TRUE)
+
+our_data_unique<-our_data_vouchers %>%
+  rbind(our_data_uniqueTissues) %>%
+  distinct(recordNumber, .keep_all = TRUE)
+
 ####3. All other records, including observations
 old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 2500) %>% 
   #remove duplicate UAZ records with less necessary data than exist in uaz_data 
@@ -65,12 +75,13 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 
   #rename variables to conform to other data sources
   rename(order = order_, scientificName = species, 
          verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM) %>%
-  mutate(recordSource = "non-UAZ pre-2021")
+  mutate(recordSource = "non-UAZ pre-2021", basisOfRecord = replace(basisOfRecord, basisOfRecord == "OCCURRENCE", "PRESERVED_SPECIMEN"))
         
 #####Combine data frames from all sources into one                      
-all_data<-full_join(our_data, old_data) %>%
+all_data<-full_join(our_data_unique, old_data) %>%
   full_join(uaz_data_elev) %>%
   filter(str_detect(scientificName, " ") & !str_detect(scientificName, " NA")) #Keep records that are identified to species
+
 
 #####Construct linear Model to analyze difference between tag and DEM elevation
 elev_lm<-lm(DEMElevationInMeters ~ verbatimElevationInMeters, data = all_data)
@@ -136,7 +147,7 @@ sd_prune<-all_data%>%
   filter(percentDeviation<300|is.na(percentDeviation))
 
 
-#####
+#####Exploratory plots
 sd_prune %>%
   filter(basisOfRecord == "PRESERVED_SPECIMEN" & family %in% c("Heteromyidae", "Geomyidae")) %>%
   filter(basisOfRecord == "PRESERVED_SPECIMEN" & family == "Heteromyidae") %>%
@@ -186,10 +197,12 @@ all_data %>%
            DEMElevationInMeters > 2000 & scientificName %in% 
            c("Chaetodipus penicillatus", "Chaetodipus baileyi") |
            DEMElevationInMeters < 2200 & scientificName == "Peromyscus maniculatus" |
-           DEMElevationInMeters < 2000 & scientificName %in% c("Neotoma mexicana", "Reithrodontomys megalotis") |
+           DEMElevationInMeters < 2000 & scientificName %in% 
+           c("Neotoma mexicana", "Reithrodontomys megalotis") |
            DEMElevationInMeters > 2000 & scientificName %in% 
            c("Peromyscus eremicus", "Onychomys torridus", "Neotoma albigula") |
-           DEMElevationInMeters < 1000 & scientificName %in% c("Sciurus aberti", "Otospermophilus variegatus") | 
+           DEMElevationInMeters < 1000 & scientificName %in% 
+           c("Sciurus aberti", "Otospermophilus variegatus") | 
            DEMElevationInMeters > 1500 & scientificName == "Ammospermophilus harrisii" |
            DEMElevationInMeters > 1200 & scientificName == "Parastrellus hesperus" |
            DEMElevationInMeters < 1000 & scientificName == "Myotis auriculus" |
@@ -199,4 +212,125 @@ all_data %>%
          ) #%>%
   #write.csv(file = "Elevational_Outliers.csv") #Otospermophilus in Sabino Canyon, interestingly enough
 
+basisCols<-c(HUMAN_OBSERVATION = "deepskyblue", 
+             MATERIAL_SAMPLE = "green3", 
+             PRESERVED_SPECIMEN = "darkorange")
 
+sd_prune %>%
+  filter(family %in% c("Heteromyidae", "Geomyidae")) %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters,
+                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+  geom_boxplot(position = position_dodge2(preserve = "single")) +
+  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+       subtitle = "Families Geomyidae and Heteromyidae",
+       x = "DEM Elevation (m)", y = "Species",
+       fill = "Basis of Record") +
+  scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
+                    labels = c("Preserved specimen", "Material sample", "Human observation")) +
+  scale_y_discrete(limits = rev) +
+  theme_minimal() +
+  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+  theme(axis.text.y = element_text(face = "italic"),
+        strip.placement = "outside")
+
+sd_prune %>%
+  filter(family == "Cricetidae") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters,
+                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+  geom_boxplot(position = position_dodge2(preserve = "single")) +
+  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+       subtitle = "Family Cricetidae",
+       x = "DEM Elevation (m)", y = "Species",
+       fill = "Basis of Record") +
+  scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
+                    labels = c("Preserved specimen", "Material sample", "Human observation")) +
+  scale_y_discrete(limits = rev) +
+  theme_minimal() +
+  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+  theme(axis.text.y = element_text(face = "italic"),
+        strip.placement = "outside")
+
+sd_prune %>%
+  filter(family == "Sciuridae") %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters,
+                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+  geom_boxplot(position = position_dodge2(preserve = "single")) +
+  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+       subtitle = "Family Sciuridae",
+       x = "DEM Elevation (m)", y = "Species",
+       fill = "Basis of Record") +
+  scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
+                    labels = c("Preserved specimen", "Material sample", "Human observation")) +
+  scale_y_discrete(limits = rev) +
+  theme_minimal() +
+  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+  theme(axis.text.y = element_text(face = "italic"),
+        strip.placement = "outside")
+
+sd_prune %>%
+  filter(order %in% c("Artiodactyla", "Lagomorpha") ) %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters,
+                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+  geom_boxplot(position = position_dodge2(preserve = "single")) +
+  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+       subtitle = "Orders Artiodactyla and Lagomorpha",
+       x = "DEM Elevation (m)", y = "Species",
+       fill = "Basis of Record") +
+  scale_fill_manual(values = basisCols, limits = rev, 
+                    labels = c("Preserved specimen", "Human observation")) +
+  scale_y_discrete(limits = rev) +
+  theme_minimal() +
+  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+  theme(axis.text.y = element_text(face = "italic"),
+        strip.placement = "outside")
+
+sd_prune %>%
+  filter(order %in% c("Carnivora","Eulipotyphla")) %>%
+  ggplot(mapping = aes(x = DEMElevationInMeters,
+                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+  geom_boxplot(position = position_dodge2(preserve = "single")) +
+  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+       subtitle = "Orders Carnivora and Eulipotyphla",
+       x = "DEM Elevation (m)", y = "Species",
+       fill = "Basis of Record") +
+  scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
+                    labels = c("Preserved specimen", "Human observation")) +
+  scale_y_discrete(limits = rev) +
+  theme_minimal() +
+  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+  theme(axis.text.y = element_text(face = "italic"),
+        strip.placement = "outside")
+
+sd_prune %>%
+  filter(order == "Chiroptera") %>% 
+  ggplot(mapping = aes(x = DEMElevationInMeters,
+                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+  geom_boxplot(position = position_dodge2(preserve = "single")) +
+  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+       subtitle = "Order Chiroptera",
+       x = "DEM Elevation (m)", y = "Species",
+       fill = "Basis of Record") +
+  scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
+                    labels = c("Preserved specimen", "Material sample", "Human observation")) +
+  scale_y_discrete(limits = rev) +
+  theme_minimal() +
+  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+  theme(axis.text.y = element_text(face = "italic"),
+        strip.placement = "outside")
+
+sd_prune %>%
+  ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
+  geom_histogram(binwidth = 1, position = "identity", alpha = 0.7) +
+  scale_x_continuous(breaks = seq(1875, 2025, 20)) +
+  labs(title = "Santa Catalinas Mammal Occurrence Records Per Year",
+       xlab = "Year", ylab = "Number of Records",
+       fill = "Basis of Record") +
+  scale_fill_manual(values = basisCols, drop = FALSE, limits = rev,
+                    labels = c("Preserved specimen", "Material sample", "Human observation")) +
+  theme_minimal()
+
+sd_prune %>%
+  ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
+  geom_density(bw = 1, position = "identity", alpha = 0.7) +
+  scale_x_continuous(breaks = seq(1875, 2025, 20)) +
+  theme_minimal()
