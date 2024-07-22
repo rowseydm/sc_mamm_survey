@@ -46,7 +46,7 @@ our_data<-read_xlsx(path = "AllMammalRecords_2021-23_Refined.xlsx") %>%
   #select only needed variables
   select(institutionCode, catalogNumber, order_, family, genus, species, 
          sex, recordedBy, recordNumber, eventDate, locality, decimalLatitude, 
-         decimalLongitude, elevation, elevationDEM, basisOfRecord, recordSource) %>%
+         decimalLongitude, elevation, elevationDEM, preparations, habitat, burnStatus, basisOfRecord, recordSource) %>%
   #rename variables to conform to other data sources
   rename(order = order_, scientificName = species, 
          verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM)
@@ -62,7 +62,7 @@ our_data_unique<-our_data_vouchers %>%
   distinct(recordNumber, .keep_all = TRUE)
 
 ####3. All other records, including observations
-old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 2500) %>% 
+old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined2024-07.xlsx", guess_max = 2500) %>% 
   #remove duplicate UAZ records with less necessary data than exist in uaz_data 
   filter(!grepl("UAZ .", catalogNumber)) %>%
   mutate_at(.vars = vars(eventDate), .funs = as.Date) %>%
@@ -75,7 +75,9 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined.xlsx", guess_max = 
   #rename variables to conform to other data sources
   rename(order = order_, scientificName = species, 
          verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM) %>%
-  mutate(recordSource = "non-UAZ pre-2021", basisOfRecord = replace(basisOfRecord, basisOfRecord == "OCCURRENCE", "PRESERVED_SPECIMEN"))
+  mutate(recordSource = "non-UAZ pre-2021", 
+         basisOfRecord = replace(basisOfRecord, basisOfRecord == "OCCURRENCE", 
+                                 "PRESERVED_SPECIMEN"))
         
 #####Combine data frames from all sources into one                      
 all_data<-full_join(our_data_unique, old_data) %>%
@@ -334,3 +336,8 @@ sd_prune %>%
   geom_density(bw = 1, position = "identity", alpha = 0.7) +
   scale_x_continuous(breaks = seq(1875, 2025, 20)) +
   theme_minimal()
+
+###For Savage to analyze:
+####Ectoparasite prevalence from our survey
+####Min and max elevation for each species (or just summary statistics on elevation)
+####Age class distribution by site
