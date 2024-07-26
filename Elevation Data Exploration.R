@@ -210,24 +210,19 @@ sd_prune %>%
   theme_minimal()
 
 all_data %>%
-  filter(scientificName %in% c("Perognathus flavus", "Dipodomys ordii") |
-           DEMElevationInMeters > 2000 & scientificName %in% 
-           c("Chaetodipus penicillatus", "Chaetodipus baileyi") |
-           DEMElevationInMeters < 2200 & scientificName == "Peromyscus maniculatus" |
+  filter(scientificName %in% c("Perognathus flavus") | #Dipodomys ordii not recovered in most recent version of database
            DEMElevationInMeters < 2000 & scientificName %in% 
-           c("Neotoma mexicana", "Reithrodontomys megalotis") |
-           DEMElevationInMeters > 2000 & scientificName %in% 
-           c("Peromyscus eremicus", "Onychomys torridus", "Neotoma albigula") |
+           c("Neotoma mexicana", "Peromyscus maniculatus") |
+           DEMElevationInMeters > 2000 & scientificName == "Neotoma albigula" |
            DEMElevationInMeters < 1000 & scientificName %in% 
            c("Sciurus aberti", "Otospermophilus variegatus") | 
-           DEMElevationInMeters > 1500 & scientificName == "Ammospermophilus harrisii" |
            DEMElevationInMeters > 1200 & scientificName == "Parastrellus hesperus" |
            DEMElevationInMeters < 1000 & scientificName == "Myotis auriculus" |
-           grepl("Virginia", locality) |
-           scientificName == "Sylvilagus floridanus" | 
-           scientificName == "Spilogale putorius"
-         ) #%>%
-  #write.csv(file = "Elevational_Outliers.csv") #Otospermophilus in Sabino Canyon, interestingly enough
+           scientificName == "Lepus californicus" |
+           scientificName == "Lepus alleni" |
+           grepl("Virginia", locality)
+         ) %>%
+  write.csv(file = "Elevational_Outliers_2024-07-06.csv") #Otospermophilus in Sabino Canyon, interestingly enough
 
 basisCols<-c(HUMAN_OBSERVATION = "deepskyblue", 
              MATERIAL_SAMPLE = "green3", 
