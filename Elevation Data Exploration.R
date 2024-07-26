@@ -61,7 +61,7 @@ our_data_unique<-our_data_vouchers %>%
   rbind(our_data_uniqueTissues) %>%
   distinct(recordNumber, .keep_all = TRUE)
 
-####3. All other records, including observations
+####3. Most other records, including observations but excluding USNM and AMNH
 old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined2024-07.xlsx", guess_max = 2500) %>% 
   #remove duplicate UAZ records with less necessary data than exist in uaz_data 
   filter(!grepl("UAZ .", catalogNumber)) %>%
@@ -78,10 +78,25 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined2024-07.xlsx", guess
   mutate(recordSource = "non-UAZ pre-2021", 
          basisOfRecord = replace(basisOfRecord, basisOfRecord == "OCCURRENCE", 
                                  "PRESERVED_SPECIMEN"))
+
+####4. USNM and AMNH records
+usnm_amnh_data<-read.csv(file = "AMNH_USNM_Records.csv") %>%
+  mutate_at(.vars = vars(eventDate), .funs = as.Date) %>%
+  mutate_at(.vars = vars(decimalLatitude, decimalLongitude, elevation, 
+                         elevationDEM), .funs = as.numeric) %>%
+  select(institutionCode, catalogNumber, order, family, genus, species,
+         recordedBy, recordNumber, eventDate, locality, decimalLatitude,
+         decimalLongitude, elevation, elevationDEM, basisOfRecord) %>%
+  rename(scientificName = species, 
+         verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM) %>%
+  mutate(recordSource = "non-UAZ pre-2021", 
+         basisOfRecord = replace(basisOfRecord, basisOfRecord == "PreservedSpecimen", 
+                                 "PRESERVED_SPECIMEN"))
         
 #####Combine data frames from all sources into one                      
 all_data<-full_join(our_data_unique, old_data) %>%
   full_join(uaz_data_elev) %>%
+  full_join(usnm_amnh_data) %>%
   filter(str_detect(scientificName, " ") & !str_detect(scientificName, " NA")) #Keep records that are identified to species
 
 
