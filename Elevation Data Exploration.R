@@ -209,26 +209,36 @@ sd_prune %>%
   geom_boxplot() +
   theme_minimal()
 
-all_data %>%
-  filter(scientificName %in% c("Perognathus flavus") | #Dipodomys ordii not recovered in most recent version of database
-           DEMElevationInMeters < 2000 & scientificName %in% 
-           c("Neotoma mexicana", "Peromyscus maniculatus") |
-           DEMElevationInMeters > 2000 & scientificName == "Neotoma albigula" |
-           DEMElevationInMeters < 1000 & scientificName %in% 
-           c("Sciurus aberti", "Otospermophilus variegatus") | 
-           DEMElevationInMeters > 1200 & scientificName == "Parastrellus hesperus" |
-           DEMElevationInMeters < 1000 & scientificName == "Myotis auriculus" |
-           scientificName == "Lepus californicus" |
-           scientificName == "Lepus alleni" |
-           grepl("Virginia", locality)
-         ) %>%
-  write.csv(file = "Elevational_Outliers_2024-07-06.csv") #Otospermophilus in Sabino Canyon, interestingly enough
+# all_data %>%
+#   filter(scientificName %in% c("Perognathus flavus") | #Dipodomys ordii not recovered in most recent version of database
+#            DEMElevationInMeters < 2000 & scientificName %in% 
+#            c("Neotoma mexicana", "Peromyscus maniculatus") |
+#            DEMElevationInMeters > 2000 & scientificName == "Neotoma albigula" |
+#            DEMElevationInMeters < 1000 & scientificName %in% 
+#            c("Sciurus aberti", "Otospermophilus variegatus") | 
+#            DEMElevationInMeters > 1200 & scientificName == "Parastrellus hesperus" |
+#            DEMElevationInMeters < 1000 & scientificName == "Myotis auriculus" |
+#            scientificName == "Lepus californicus" |
+#            scientificName == "Lepus alleni" |
+#            grepl("Virginia", locality)
+#          ) %>%
+#   write.csv(file = "Elevational_Outliers_2024-07-06.csv") #Otospermophilus in Sabino Canyon, interestingly enough
+
+outliers <- read.csv("Elevational_Outliers_2024-07-06.csv") %>%
+  filter(institutionCode != "ASU", institutionCode != "iNaturalist", 
+        family != "Vespertilionidae", 	scientificName != "Otospermophilus variegatus",
+        catalogNumber != "UAZ 15492", catalogNumber != "UAZ 20835", catalogNumber != "UAZ 03820")
+
+outliers <- subset(outliers, select = -c(X))
+outliers$eventDate <- as.Date(outliers$eventDate)
+sd_prune_no_outliers <- filter(sd_prune, !catalogNumber %in% outliers$catalogNumber)
+##sd_prune_no_outliers <- filter(sd_prune, catalogNumber != match(sd_prune$catalogNumber, outliers$catalogNumber))
 
 basisCols<-c(HUMAN_OBSERVATION = "deepskyblue", 
              MATERIAL_SAMPLE = "green3", 
              PRESERVED_SPECIMEN = "darkorange")
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   filter(family %in% c("Heteromyidae", "Geomyidae")) %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -245,7 +255,7 @@ sd_prune %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   filter(family == "Cricetidae") %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -262,7 +272,7 @@ sd_prune %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   filter(family == "Sciuridae") %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -279,7 +289,7 @@ sd_prune %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   filter(order %in% c("Artiodactyla", "Lagomorpha") ) %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -296,7 +306,7 @@ sd_prune %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   filter(order %in% c("Carnivora","Eulipotyphla")) %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -313,7 +323,7 @@ sd_prune %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   filter(order == "Chiroptera") %>% 
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -323,14 +333,14 @@ sd_prune %>%
        x = "DEM Elevation (m)", y = "Species",
        fill = "Basis of Record") +
   scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
-                    labels = c("Preserved specimen", "Material sample", "Human observation")) +
+                    labels = c("Preserved specimen", "Human observation")) +
   scale_y_discrete(limits = rev) +
   theme_minimal() +
   facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
   geom_histogram(binwidth = 1, position = "identity", alpha = 0.7) +
   scale_x_continuous(breaks = seq(1875, 2025, 20)) +
@@ -341,13 +351,35 @@ sd_prune %>%
                     labels = c("Preserved specimen", "Material sample", "Human observation")) +
   theme_minimal()
 
-sd_prune %>%
+sd_prune_no_outliers %>%
   ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
   geom_density(bw = 1, position = "identity", alpha = 0.7) +
   scale_x_continuous(breaks = seq(1875, 2025, 20)) +
   theme_minimal()
 
-###For Savage to analyze:
-####Ectoparasite prevalence from our survey
-####Min and max elevation for each species (or just summary statistics on elevation)
+##For Savage to analyze:
+###Ectoparasite prevalence from our survey
+our_data %>%
+  select(recordNumber, preparations) %>%
+  filter(preparations == 'ectos') %>%
+  filter(!duplicated(incomparables = FALSE, recordNumber))
+  ###123 unique ecto entries
+  ###369 unique recordNumbers
+
+####Burn status
+our_data %>%
+  select(recordNumber, burnStatus) %>%
+  filter(burnStatus == 'unburned') %>%
+  filter(!duplicated(incomparables = FALSE, recordNumber))
+  ###55 unique "burned" records
+  ###314 unique "unburned" records
+  ###369 unique recordNumbers
+
+####Min, max, med elevation (and standard devation) for each species (or just summary statistics on elevation)
+  ##parallel with just "our_data" and one with all species "sd_prune_no_outliers", create table of data
+sd_prune_no_outliers %>%
+  select(scientificName, DEMElevationInMeters) %>%
+  summarise(sd = sd(DEMElevationInMeters), .by = scientificName) %>%
+  print(n = 73)
+  
 ####Age class distribution by site
