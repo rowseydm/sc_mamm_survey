@@ -1,3 +1,9 @@
+# ###reminder that github credentials will need to be set and refreshed every so often:
+# library(usethis)
+# library(gitcreds)
+# create_github_token() #will open window to create github access token; copy token from 
+# gitcreds_set()
+
 rm(list=ls())
 library(ggplot2)
 library(tidyr)
