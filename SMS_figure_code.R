@@ -4,8 +4,19 @@
 
 # Note: data objects used here are loaded in Elevation Data Exploration.R
 
-pacman::p_load(elevatr, ggbeeswarm, ggnewscale, ggord, ggplot2, ggrepel, grid, gridExtra, raster, reshape2, sf)
+# DR Needed to run the following code chunk to be able to install ggord
+# options(repos = c(
+#   fawda123 = 'https://fawda123.r-universe.dev',
+#   CRAN = 'https://cloud.r-project.org'))
+# 
+# # Install ggord
+# install.packages('ggord')
+
+
+pacman::p_load(vegan, elevatr, ggbeeswarm, ggnewscale, ggord, ggplot2, ggrepel, grid, gridExtra, raster, reshape2, sf)
 library(tidyverse)
+library(ggord)
+library(BiocManager)
 
 # colors
 # In this order: loud pink, berry, blue, olive green, light aqua
@@ -14,7 +25,7 @@ cols <- c("#f178fa", "#62255c", "#416fb4", "#799943", "#bafdca")
 
 #### Map Figures ####
 # Read in Santa Catalinas area polygon
-sancat <- st_read("Santa_Catalina_StudyArea_Polygon_FINAL.shp")
+sancat <- st_read("../../Resources/Santa_Catalina_StudyArea_Polygon_FINAL.shp")
 sancat <- st_set_crs(sancat, value = 4326) # This sets the CRS to WGS84
 
 # Obtain elevation raster for the Santa Catalinas polygon
