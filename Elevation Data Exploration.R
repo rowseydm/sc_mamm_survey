@@ -1,7 +1,7 @@
 # ###reminder that github credentials will need to be set and refreshed every so often:
 # library(usethis)
 # library(gitcreds)
-# create_github_token() #will open window to create github access token; copy token from 
+# create_github_token() #will open window to create github access token; copy token from
 # gitcreds_set()
 
 rm(list=ls())
@@ -65,7 +65,9 @@ our_data_uniqueTissues<-our_data %>%
 
 our_data_unique<-our_data_vouchers %>%
   rbind(our_data_uniqueTissues) %>%
-  distinct(recordNumber, .keep_all = TRUE)
+  distinct(recordNumber, .keep_all = TRUE) %>%
+  filter(str_detect(scientificName, " ") & !str_detect(scientificName, " NA"))
+  
 
 ####3. Most other records, including observations but excluding USNM and AMNH
 old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined2024-07.xlsx", guess_max = 2500) %>% 
