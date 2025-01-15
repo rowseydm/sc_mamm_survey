@@ -52,7 +52,7 @@ our_data<-read_xlsx(path = "AllMammalRecords_2021-23_Refined.xlsx") %>%
   #select only needed variables
   select(institutionCode, catalogNumber, order_, family, genus, species, 
          sex, recordedBy, recordNumber, eventDate, locality, decimalLatitude, 
-         decimalLongitude, elevation, elevationDEM, preparations, habitat, burnStatus, basisOfRecord, recordSource) %>%
+         decimalLongitude, elevation, elevationDEM, preparations, habitat, burnStatus, basisOfRecord, recordSource, site) %>%
   #rename variables to conform to other data sources
   rename(order = order_, scientificName = species, 
          verbatimElevationInMeters = elevation, DEMElevationInMeters = elevationDEM)
@@ -390,4 +390,7 @@ sd_prune_no_outliers %>%
   summarise(sd = sd(DEMElevationInMeters), .by = scientificName) %>%
   print(n = 73)
   
-####Age class distribution by site
+###Trap success by site and habitat
+table(our_data_unique$scientificName, our_data_unique$site)
+table(our_data_unique$scientificName, our_data_unique$habitat)
+
