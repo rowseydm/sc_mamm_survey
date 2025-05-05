@@ -172,6 +172,11 @@ burn <- our_data_unique %>%
   mutate(habburn = paste(habitat, burnStatus, sep = " ")) %>% 
   dplyr::select(order, family, genus, scientificName, habburn)
 
+burn2 <- our_data_unique %>% 
+  mutate(burnStatus = recode(burnStatus, `Unburned` = "unburned")) %>% 
+  mutate(habburn = paste(habitat, burnStatus, sep = " ")) %>% 
+  dplyr::select(order, family, genus, scientificName, habburn,verbatimElevationInMeters,DEMElevationInMeters)
+
 # convert to presence-absence matrix
 sp_pres_ab <- dcast(burn, habburn~scientificName, length) 
 rownames(sp_pres_ab) <- sp_pres_ab$habburn
@@ -232,6 +237,8 @@ corsp_niceplot <- ggplot(corsp_df, mapping = aes(x = Dim1, y = Dim2, pch = shape
 
 corsp_niceplot
 
+# Calculate mean habitat elevation for PCoA
+aggregate(burn2[, 6:7], list(burn2$habburn), mean)
 
 
 
