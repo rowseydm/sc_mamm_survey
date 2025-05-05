@@ -224,9 +224,9 @@ corsp_df <-corsp_df %>%
 
 
 # NB: This looks very crappy at the moment, maybe fix it up.
-corsp_niceplot <- ggplot(corsp_df, mapping = aes(x = Dim2, y = Dim3, pch = shape, color = color, label = Label))+
+corsp_niceplot <- ggplot(corsp_df, mapping = aes(x = Dim1, y = Dim2, pch = shape, color = color, label = Label))+
   geom_point(cex = 4)+
-  scale_color_manual(values = c("#f178fa", "#62255c", "#416fb4", "#799943", "#bafdca", "#505050", "#959595", rep("#000000", 15)))+
+  scale_color_manual(values = c("#f178fa", "#62255c", "#416fb4", "#799943", "#bafdca", "#505050", "#959595", rep("#000000", 15)))#+
   geom_label_repel(cex =3)
 
 
