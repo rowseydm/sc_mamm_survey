@@ -5,9 +5,9 @@
 # Note: data objects used here are loaded in Elevation Data Exploration.R
 
 # DR Needed to run the following code chunk to be able to install ggord
-# options(repos = c(
-#   fawda123 = 'https://fawda123.r-universe.dev',
-#   CRAN = 'https://cloud.r-project.org'))
+#  options(repos = c(
+#    fawda123 = 'https://fawda123.r-universe.dev',
+#    CRAN = 'https://cloud.r-project.org'))
 # 
 # # Install ggord
 # install.packages('ggord')
@@ -22,6 +22,7 @@ library(BiocManager)
 # In this order: loud pink, berry, blue, olive green, light aqua
 # c("#f178fa", "#62255c", "#4d6180", "#758150", "#bafdca")
 cols <- c("#f178fa", "#62255c", "#416fb4", "#799943", "#bafdca")
+colsplus <- c("#f178fa", "#62255c", "#416fb4", "#799943", "#bafdca", "#505050", "#959595", rep("#000000", 15))
 
 #### Map Figures ####
 # Read in Santa Catalinas area polygon
@@ -171,6 +172,11 @@ burn <- our_data_unique %>%
   mutate(habburn = paste(habitat, burnStatus, sep = " ")) %>% 
   dplyr::select(order, family, genus, scientificName, habburn)
 
+burn2 <- our_data_unique %>% 
+  mutate(burnStatus = recode(burnStatus, `Unburned` = "unburned")) %>% 
+  mutate(habburn = paste(habitat, burnStatus, sep = " ")) %>% 
+  dplyr::select(order, family, genus, scientificName, habburn,verbatimElevationInMeters,DEMElevationInMeters)
+
 # convert to presence-absence matrix
 sp_pres_ab <- dcast(burn, habburn~scientificName, length) 
 rownames(sp_pres_ab) <- sp_pres_ab$habburn
@@ -189,6 +195,7 @@ library(ca)
 corsp <- ca(sp_pres_ab)
 corsp_plot <- plot(corsp)
 
+
 # Make your ca plot object into a thing you can put in ggplot. From here: https://www.r-bloggers.com/2019/08/correspondence-analysis-visualization-using-ggplot/ 
 
 make.ca.plot.df <- function (ca.plot.obj,
@@ -204,14 +211,54 @@ make.ca.plot.df <- function (ca.plot.obj,
   df
 }
 
+# Shapes and colors. Shapes by family, colors by habitat.
+col_corsp <- c("IntChapUB", "MadOakB", "MadOakUB", "PetConB", "PetConUB", "SDGrassUB", "EcotoneUB", rep("species", 15))
+shape_corsp <- c(rep("B_hab", 7), "Sciuridae", rep("Heteromyidae", 3), "Sciuridae", rep("Cricetidae", 9), "Soricidae")
+
+threehab <- as.data.frame(corsp$rowcoord[,3]) %>% 
+  rename(Dim3 = "corsp$rowcoord[, 3]")
+threesp <- as.data.frame(corsp$colcoord[,3]) %>% 
+  rename(Dim3 = "corsp$colcoord[, 3]")
+three <- rbind(threehab, threesp)
 corsp_df <- make.ca.plot.df(corsp_plot, row.lab = "habitat", col.lab = "species")
+corsp_df <-corsp_df %>% 
+  mutate(Dim3 = as.numeric(three[,]), 
+         shape = shape_corsp, 
+         color = col_corsp)
+
+
 
 # NB: This looks very crappy at the moment, maybe fix it up.
-corsp_niceplot <- ggplot(corsp_df, mapping = aes(x = Dim1, y = Dim2, col = Variable, label = Label))+
-  geom_point()+
-  geom_label()
+corsp_niceplot <- ggplot(corsp_df, mapping = aes(x = Dim1, y = Dim2, pch = shape, color = color, label = Label))+
+  geom_point(cex = 4)+
+  scale_color_manual(values = c("#f178fa", "#62255c", "#416fb4", "#799943", "#bafdca", "#505050", "#959595", rep("#000000", 15)))#+
+  geom_label_repel(cex =3)
+
 
 corsp_niceplot
 
+# Calculate mean habitat elevation for PCoA
+aggregate(burn2[, 6:7], list(burn2$habburn), mean)
+
+
 
 #~#~---S-A-N-D-B-O-X---~#~#-------------------
+# testing out an AZ map strategy from here:
+# https://rspatialdata.github.io/elevation.html
+usa <- rgeoboundaries::geoboundaries("United States of America", adm_lvl = "adm1", type = "simplified")
+az <- usa[usa$shapeName=="Arizona",]
+az_elev <- elevatr::get_elev_raster(locations = az, z = 9, clip = "locations")
+
+az_elev <- as.data.frame(az_elev, xy = TRUE)
+colnames(az_elev)[3] <- "elevation"
+# remove rows of data frame with one or more NA's,using complete.cases
+az_elev <- az_elev[complete.cases(az_elev),]
+ggplot() +
+  geom_raster(data = az_elev, aes(x = x, y = y, fill = elevation)) +
+  geom_sf(data = az, color = "white", fill = NA) +
+  geom_sf(data = sancat, color = "white", fill = NA) +
+  coord_sf() +
+  scale_fill_distiller(type = "seq",
+                       direction = -1,
+                       palette = "Greys")+
+  labs(title = "Elevation in Arizona", x = "Longitude", y = "Latitude", fill = "Elevation (meters)")
