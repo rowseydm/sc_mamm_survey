@@ -394,3 +394,10 @@ sd_prune_no_outliers %>%
 table(our_data_unique$scientificName, our_data_unique$site)
 table(our_data_unique$scientificName, our_data_unique$habitat)
 
+
+# Calculate mean habitat elevation lumping burned/unburned
+aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$habitat), mean)
+# Various by-species summary statistics
+our_data_unique %>%
+  summarise(min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), .by = scientificName) %>%
+  print()
