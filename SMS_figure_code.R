@@ -239,7 +239,8 @@ corsp_niceplot
 
 # Calculate mean habitat elevation for PCoA
 aggregate(burn2[, 6:7], list(burn2$habburn), mean)
-
+# Calculate mean habitat elevation lumping burned/unburned
+aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$habitat), mean)
 
 
 #~#~---S-A-N-D-B-O-X---~#~#-------------------
