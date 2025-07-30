@@ -13,6 +13,8 @@ library(stringr)
 library(purrr)
 library(gsubfn)
 library(ggpubr)
+library(sampbias)
+library(terra)
 
 list.files(pattern = ".xlsx")
 
@@ -239,8 +241,18 @@ outliers <- read.csv("Elevational_Outliers_2024-07-06.csv") %>%
 
 outliers <- subset(outliers, select = -c(X))
 outliers$eventDate <- as.Date(outliers$eventDate)
-sd_prune_no_outliers <- filter(sd_prune, !catalogNumber %in% outliers$catalogNumber)
+outliers2<- sd_prune%>%
+  filter(scientificName=="Felis catus" | scientificName=="Peromyscus truei")
+sd_prune_no_outliers_pero <- sd_prune%>%
+  filter(!catalogNumber %in% outliers$catalogNumber) %>%
+  filter(!catalogNumber %in% outliers2$catalogNumber)
 ##sd_prune_no_outliers <- filter(sd_prune, catalogNumber != match(sd_prune$catalogNumber, outliers$catalogNumber))
+sd_prune_no_outliers <- sd_prune_no_outliers_pero
+sd_prune_no_outliers['scientificName'][sd_prune_no_outliers['scientificName'] == "Peromyscus leucopus" |
+                                         sd_prune_no_outliers['scientificName'] == "Peromyscus melanotis" |
+                                         sd_prune_no_outliers['scientificName'] == "Peromyscus sonoriensis" |
+                                         sd_prune_no_outliers['scientificName'] == "Peromyscus maniculatus" ] <- "Peromyscus sonoriensis.melanotis"
+  
 
 basisCols<-c(HUMAN_OBSERVATION = "deepskyblue", 
              MATERIAL_SAMPLE = "green3", 
@@ -386,9 +398,10 @@ our_data %>%
 ####Min, max, med elevation (and standard devation) for each species (or just summary statistics on elevation)
   ##parallel with just "our_data" and one with all species "sd_prune_no_outliers", create table of data
 sd_prune_no_outliers %>%
-  select(scientificName, DEMElevationInMeters) %>%
-  summarise(sd = sd(DEMElevationInMeters), .by = scientificName) %>%
-  print(n = 73)
+  dplyr::select(scientificName, DEMElevationInMeters) %>%
+  summarise(n = n(), min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), mean = mean(DEMElevationInMeters), sd = sd(DEMElevationInMeters),.by = scientificName) %>%
+  arrange(scientificName) %>%
+  print(n = 66)
   
 ###Trap success by site and habitat
 table(our_data_unique$scientificName, our_data_unique$site)
@@ -397,7 +410,82 @@ table(our_data_unique$scientificName, our_data_unique$habitat)
 
 # Calculate mean habitat elevation lumping burned/unburned
 aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$habitat), mean)
+aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$site), mean)
 # Various by-species summary statistics
-our_data_unique %>%
-  summarise(min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), .by = scientificName) %>%
+our_data_unique_p %>%
+  summarise(n= n(), min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), .by = scientificName) %>%
   print()
+
+# Historical records only
+historic_data <- sd_prune_no_outliers %>%
+  filter(recordSource != "ASU post-2020")
+# records of historical specimens by basis of record
+historic_data %>%
+  summarise(n=n(), .by = basisOfRecord)
+  
+historic_data %>%
+  summarise(n=n(), .by = scientificName) %>%
+  print(n = 72)
+
+sd_prune_no_outliers %>%
+  dplyr::select(scientificName, DEMElevationInMeters) %>%
+  summarise(n = n(), min = min(DEMElevationInMeters), 
+            max = max(DEMElevationInMeters), 
+            mean = mean(DEMElevationInMeters), 
+            sd = sd(DEMElevationInMeters), 
+            range = max(DEMElevationInMeters)-min(DEMElevationInMeters), 
+            .by = scientificName) %>%
+  arrange(sd) %>%
+  filter(n>10) %>%
+    print(n = 66) %>%
+  ggplot(mapping = aes(y = sd, x = rev(seq_along(1:length(sd))))) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(1875, 2025, 20)) +
+  theme_minimal()
+
+
+# Density plot of samples relative to elevation
+sd_prune_no_outliers %>%
+  ggplot(mapping = aes(x = (DEMElevationInMeters))) +
+  geom_density() +
+  scale_x_continuous(limits = c(800, 3000)) +
+  theme_minimal() # holy sampling bias batman!
+
+#our samples only
+our_data_unique %>%
+  ggplot(mapping = aes(x = log(DEMElevationInMeters))) +
+  geom_density() +
+  scale_x_continuous(limits = c(6.625, 8)) +
+  theme_minimal() # holy sampling bias batman!
+
+###At this point we need to split the recent samples back out of the no-outliers
+####because we have changed the names of the montane Peromyscus
+our_data_unique_p <-sd_prune_no_outliers %>%
+  filter(recordSource=="ASU post-2020")
+  
+#filter historic records to the 15 species sampled in our survey
+match_data <- historic_data %>%
+  filter(scientificName %in% unique(our_data_unique_p$scientificName)) #1208 records
+
+left_join(match_data %>%
+  summarise(min.hist = min(DEMElevationInMeters), 
+            max.hist = max(DEMElevationInMeters), 
+            .by = scientificName),
+  our_data_unique_p %>%
+    summarise(min.rec = min(DEMElevationInMeters),
+              max.rec = max(DEMElevationInMeters),
+              .by = scientificName)) %>%
+  mutate(min.ext = min.hist>min.rec, 
+         max.ext = max.hist<max.rec,
+         elev.diff.min = min.hist - min.rec, 
+         elev.diff.max = max.rec - max.hist) %>%
+  filter(min.ext == TRUE | max.ext == TRUE) %>%
+  write.csv(file = "SC elevational extensions.csv")
+  
+###Quantify sampling bias in historical and contemporary records
+scboundary<-as.data.frame(terra::vect(basename("Santa_Catalina_StudyArea_Polygon_FINAL.shp"), 
+                                      crs = "epsg:4326"), geom = "WKT") #read SC Polygon
+# smamm.sampbias<-calculate_bias(x = sd_prune_no_outliers %>%
+#                                  rename(species = scientificName), 
+#                                res = 0.035,
+#                                restrict_sample = sancat) #need a custom gazetteer with roads if we want to make this work...
