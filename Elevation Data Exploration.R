@@ -253,6 +253,8 @@ sd_prune_no_outliers['scientificName'][sd_prune_no_outliers['scientificName'] ==
                                          sd_prune_no_outliers['scientificName'] == "Peromyscus sonoriensis" |
                                          sd_prune_no_outliers['scientificName'] == "Peromyscus maniculatus" ] <- "Peromyscus sonoriensis.melanotis"
   
+# write.csv(sd_prune_no_outliers, file = "SC_All_Records_No_Outliers.csv")
+
 
 basisCols<-c(HUMAN_OBSERVATION = "deepskyblue", 
              MATERIAL_SAMPLE = "green3", 
