@@ -6,6 +6,8 @@
 
 rm(list=ls())
 library(ggplot2)
+library(viridis)
+library(cowplot)
 library(tidyr)
 library(dplyr)
 library(readxl)
@@ -13,8 +15,10 @@ library(stringr)
 library(purrr)
 library(gsubfn)
 library(ggpubr)
-library(sampbias)
 library(terra)
+library(lwgeom)
+library(nngeo)
+library(forcats)
 
 list.files(pattern = ".xlsx")
 
@@ -26,7 +30,7 @@ uaz_data<-read_xlsx(path = "UAZ_Refined.xlsx") %>% #UAZ occurrence records sourc
   mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric) %>%
   mutate_at(.vars = vars(COLLECTING_DATE), .funs = as.Date, format = "%d %B %Y") %>%
   #Select only needed variables
-  select(UAZ_NUMBER, ORDER_, FAMILY, GENUS, SPECIES, SEX, COLLECTOR, 
+  dplyr::select(UAZ_NUMBER, ORDER_, FAMILY, GENUS, SPECIES, SEX, COLLECTOR, 
          COLLECTOR_NUMBER, COLLECTING_DATE, COUNTY, LOCATION, LATITUDE, 
          LONGITUDE) %>%
   #Rename variables to conform to other sources
@@ -43,7 +47,7 @@ uaz_data_elev <- uaz_data %>% #Combine occurrence records with DEM elevation
          recordSource = "UAZ",
          institutionCode = "UAZ",
          basisOfRecord = "PRESERVED_SPECIMEN") %>%
-  select(-species) %>%
+  dplyr::select(-species) %>%
   left_join(y = uaz_elev, by = "catalogNumber") 
 
 ####2. Records from our survey
@@ -52,7 +56,7 @@ our_data<-read_xlsx(path = "AllMammalRecords_2021-23_Refined.xlsx") %>%
   mutate_at(.vars = vars(eventDate), .funs = as.Date) %>%
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude), .funs = as.numeric) %>%
   #select only needed variables
-  select(institutionCode, catalogNumber, order_, family, genus, species, 
+  dplyr::select(institutionCode, catalogNumber, order_, family, genus, species, 
          sex, recordedBy, recordNumber, eventDate, locality, decimalLatitude, 
          decimalLongitude, elevation, elevationDEM, preparations, habitat, burnStatus, basisOfRecord, recordSource, site) %>%
   #rename variables to conform to other data sources
@@ -79,7 +83,7 @@ old_data<-read_xlsx(path = "AllMammalRecords_pre2021_Refined2024-07.xlsx", guess
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude, elevation, 
                          elevationDEM), .funs = as.numeric) %>%
   #select only needed variables
-  select(institutionCode, catalogNumber, order_, family, genus, species,
+  dplyr::select(institutionCode, catalogNumber, order_, family, genus, species,
          recordedBy, recordNumber, eventDate, locality, decimalLatitude,
          decimalLongitude, elevation, elevationDEM, basisOfRecord) %>%
   #rename variables to conform to other data sources
@@ -94,7 +98,7 @@ usnm_amnh_data<-read.csv(file = "AMNH_USNM_Records.csv") %>%
   mutate_at(.vars = vars(eventDate), .funs = as.Date) %>%
   mutate_at(.vars = vars(decimalLatitude, decimalLongitude, elevation, 
                          elevationDEM), .funs = as.numeric) %>%
-  select(institutionCode, catalogNumber, order, family, genus, species,
+  dplyr::select(institutionCode, catalogNumber, order, family, genus, species,
          recordedBy, recordNumber, eventDate, locality, decimalLatitude,
          decimalLongitude, elevation, elevationDEM, basisOfRecord) %>%
   rename(scientificName = species, 
@@ -166,8 +170,8 @@ all_data %>%
   labs(title = "verbatim vs DEM elevation, > 3 sd from mean")
 
 #####export to new file
-all_data %>%
-  write.csv(file = "SC_allmamm_georef.csv")
+# all_data %>%
+#   write.csv(file = "SC_allmamm_georef.csv")
 
 
 sd_prune<-all_data%>% 
@@ -382,7 +386,7 @@ sd_prune_no_outliers %>%
 ##For Savage to analyze:
 ###Ectoparasite prevalence from our survey
 our_data %>%
-  select(recordNumber, preparations) %>%
+  dplyr::select(recordNumber, preparations) %>%
   filter(preparations == 'ectos') %>%
   filter(!duplicated(incomparables = FALSE, recordNumber))
   ###123 unique ecto entries
@@ -390,7 +394,7 @@ our_data %>%
 
 ####Burn status
 our_data %>%
-  select(recordNumber, burnStatus) %>%
+  dplyr::select(recordNumber, burnStatus) %>%
   filter(burnStatus == 'unburned') %>%
   filter(!duplicated(incomparables = FALSE, recordNumber))
   ###55 unique "burned" records
@@ -414,9 +418,10 @@ table(our_data_unique$scientificName, our_data_unique$habitat)
 aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$habitat), mean)
 aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$site), mean)
 # Various by-species summary statistics
-our_data_unique_p %>%
-  summarise(n= n(), min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), .by = scientificName) %>%
-  print()
+our_data_unique %>%
+  summarise(n= n(), min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), 
+            .by = scientificName) %>%
+  print(n=65)
 
 # Historical records only
 historic_data <- sd_prune_no_outliers %>%
@@ -428,6 +433,18 @@ historic_data %>%
 historic_data %>%
   summarise(n=n(), .by = scientificName) %>%
   print(n = 72)
+
+historic_data %>%
+  dplyr::select(scientificName, DEMElevationInMeters) %>%
+  summarise(n = n(), min = min(DEMElevationInMeters), 
+            max = max(DEMElevationInMeters), 
+            mean = mean(DEMElevationInMeters), 
+            sd = sd(DEMElevationInMeters), 
+            range = max(DEMElevationInMeters)-min(DEMElevationInMeters), 
+            .by = scientificName) %>%
+  arrange(desc(max)) %>%
+  print(n = 66)
+
 
 sd_prune_no_outliers %>%
   dplyr::select(scientificName, DEMElevationInMeters) %>%
@@ -442,8 +459,10 @@ sd_prune_no_outliers %>%
     print(n = 66) %>%
   ggplot(mapping = aes(y = sd, x = rev(seq_along(1:length(sd))))) +
   geom_line() +
-  scale_x_continuous(breaks = seq(1875, 2025, 20)) +
+  scale_x_continuous() +
   theme_minimal()
+
+
 
 
 # Density plot of samples relative to elevation
@@ -469,7 +488,8 @@ our_data_unique_p <-sd_prune_no_outliers %>%
 match_data <- historic_data %>%
   filter(scientificName %in% unique(our_data_unique_p$scientificName)) #1208 records
 
-left_join(match_data %>%
+elev_extend<-
+  left_join(match_data %>%
   summarise(min.hist = min(DEMElevationInMeters), 
             max.hist = max(DEMElevationInMeters), 
             .by = scientificName),
@@ -481,13 +501,176 @@ left_join(match_data %>%
          max.ext = max.hist<max.rec,
          elev.diff.min = min.hist - min.rec, 
          elev.diff.max = max.rec - max.hist) %>%
-  filter(min.ext == TRUE | max.ext == TRUE) %>%
-  write.csv(file = "SC elevational extensions.csv")
+  filter(min.ext == TRUE | max.ext == TRUE) 
+# elev_extend %>%
+#   write.csv(file = "SC elevational extensions.csv")
   
 ###Quantify sampling bias in historical and contemporary records
-scboundary<-as.data.frame(terra::vect(basename("Santa_Catalina_StudyArea_Polygon_FINAL.shp"), 
+scboundary_df<-as.data.frame(terra::vect(basename("Santa_Catalina_StudyArea_Polygon_LargestOnly.shp"), 
                                       crs = "epsg:4326"), geom = "WKT") #read SC Polygon
-# smamm.sampbias<-calculate_bias(x = sd_prune_no_outliers %>%
-#                                  rename(species = scientificName), 
-#                                res = 0.035,
-#                                restrict_sample = sancat) #need a custom gazetteer with roads if we want to make this work...
+scboundary<-terra::vect(basename("Santa_Catalina_StudyArea_Polygon_LargestOnly.shp"), 
+                                 crs = "epsg:4326")
+roads<-terra::vect(basename("SantaCatalinas_Roads_4326.shp"), crs = "epsg:4326") #CRS MUST BE THE SAME FOR ALL LAYERS
+roads_df<-as.data.frame(roads, geom = "WKT")
+###plot roads on map of study area
+ggplot(data = sf::st_as_sf(scboundary)) +
+  geom_sf() +
+  geom_sf(data = sf::st_as_sf(roads))
+
+###Code for calculating sampling bias but the package lowkey isn't very helpful for what we're doing
+####Consider removing once remainder of script is complete
+# gaz<-list(roads = roads)
+# mamm.sampbias<-calculate_bias(x = sd_prune_no_outliers %>%
+#                                 rename(species = scientificName) %>%
+#                                 dplyr::select(species, decimalLatitude, decimalLongitude),
+#                               gaz = gaz,
+#                               res = 0.0035,
+#                               restrict_sample = scboundary
+#                               ) #need a custom gazetteer with roads if we want to make this work...
+# summary(mamm.sampbias)
+# plot(mamm.sampbias)
+# 
+# scmamm.road.dists<-as.data.frame(mamm.sampbias$distance_rasters)
+# modplot.sampbias<-function (x, y, ...) 
+# {
+#   plo1 <- x$bias_estimate %>% pivot_longer(cols = contains("w_"), 
+#                                            names_to = "bias", values_to = "posterior_estimate") %>% 
+#     mutate(bias = gsub("w_", "", .data$bias)) %>% mutate(bias = fct_reorder(.data$bias, 
+#                                                                             .data$posterior_estimate, .fun = median, .desc = FALSE))
+#   plo2_w <- colMeans(x$bias_estimate)
+#   plo2_dist <- seq(0, y, length.out = 1000)
+#   plo2 <- data.frame(dist = plo2_dist, rate = plo2_w[4] * exp(-plo2_w[5:(length(plo2_w) - 
+#                                                                            1)] * plo2_dist), id = names(x$bias_estimate)[-c(1:4, 
+#                                                                                                                             ncol(x$bias_estimate))]) %>% mutate(id = gsub("w_", "", 
+#                                                                                                                                                                           .data$id)) %>% mutate(id = factor(.data$id, levels = levels(plo1$bias)))
+#   p1 <- ggplot(plo1) + geom_boxplot(aes(x = .data$bias, y = .data$posterior_estimate, 
+#                                         fill = .data$bias)) + scale_fill_viridis(discrete = TRUE) + 
+#     xlab("Biasing factor") + ylab("Posterior weight") + coord_flip() + 
+#     theme_bw() + theme(panel.grid.minor.x = element_blank(), 
+#                        panel.grid.major.y = element_blank(), legend.position = "none")
+#   p2 <- ggplot(plo2) + geom_point(aes(x = .data$dist, y = .data$rate, 
+#                                       color = .data$id)) + scale_color_viridis(discrete = TRUE) + 
+#     xlab("Distance to the bias [km]") + ylab("Sampling rate") + 
+#     theme_bw() + theme(panel.grid.minor.x = element_blank(), 
+#                        panel.grid.major.y = element_blank(), legend.title = element_blank(), 
+#                        legend.position = "bottom")
+#   out <- plot_grid(p1, p2, labels = c("A", "B"), ncol = 1)
+#   print(out)
+# }
+# modplot.sampbias(mamm.sampbias, y  = 4)
+
+#####SAMPLING EFFORT ANALYSIS#####
+###Are specimens randomly sampled relative to elevation, terrain ruggedness, 
+####or distance from roads?
+###Procedure: compare observed values to values from simulated samples in Santa Catalinas
+
+####Read in raster file for calculating elevation and TRI bias
+scrast<-rast(basename("ASTERDEM_cropped.tif"))
+sc_tri<-terrain(scrast, v = "TRI") #generate terrain ruggedness index (TRI) for DEM cells
+
+###Generate polygon of Santa Catalinas boundary
+sf_scpolygon<-sf::st_make_valid(sf::st_as_sf(scboundary))#the geometry needs to be fixed before sampling
+
+###Simulate spatial data - 1000 random samples within santa catalinas boundary
+l<-vector(mode = "list", length = 1000) #create list and sample randomly 1000 times
+set.seed(12345)
+# scsim<-lapply(l, function(x) sf::st_sample(sf_scpolygon, size = 500))
+# saveRDS(scsim, file = "scsim.rds")#Saving this object because it takes a while to calculate
+# ggplot(data = sf_scpolygon) +
+#   geom_sf() +
+#   geom_sf(data = sf_roads) +
+#   geom_sf(data = scsim[[2]])#change element of scsim to heuristically check sampling
+
+scsim2<-sf::st_sample(sf_scpolygon, size = 10000)
+
+
+###Observed and simulated elevations of records
+mamm_elev<-extract(scrast, sd_prune_no_outliers %>%
+                     select(decimalLongitude, decimalLatitude))
+# mamm_elev_sim<-lapply(lapply(scsim, vect), function(x) extract(scrast, x))
+mamm_elev_sim2<-extract(scrast, vect(scsim2))
+summary(mamm_elev)
+summary(mamm_elev_sim2)
+
+###Observed and simulated terrain ruggedness index for records
+mamm_tri<-extract(sc_tri, sd_prune_no_outliers %>%
+                    select(decimalLongitude, decimalLatitude)) #calculate TRI for sampled points
+# mamm_tri_sim<-lapply(lapply(scsim, vect), function(x) extract(sc_tri, x))
+mamm_tri_sim2<-extract(sc_tri, vect(scsim2))
+summary(mamm_tri)
+summary(mamm_tri_sim2)
+
+###calculate distances between actual specimens and roads
+####First convert the various data file types into sf
+sf_obs<-sf::st_as_sf(sd_prune_no_outliers %>%
+                       rename(species = scientificName) %>%
+                       dplyr::select(species, 
+                                     decimalLongitude, 
+                                     decimalLatitude), 
+                     coords = c(2:3),
+                     crs="epsg:4326")
+sf_roads<-sf::st_as_sf(roads)
+distobs<-unlist(st_nn(sf_obs, sf_roads, returnDist = T)$dist)#extract observed distances and compile them into a numeric vector
+distobs_mean<-mean(distobs)
+distobs_median<-median(distobs)
+summary(distobs)
+
+###calculate distances between simulated points and roads
+# distsims<-lapply(scsim, function(x) unlist(st_nn(x, sf_roads, returnDist = T)$dist))
+# saveRDS(distsims, file = "distsims.rds")
+# distsims_mean<-unlist(lapply(distsims, mean))
+# distsims_median<-unlist(lapply(distsims, median))
+# # hist(log(distsims_mean), breaks = 50, xlim = c(6,7.75))
+# # abline(v = log(distobs_mean))
+# # summary(distsims_mean)
+# # hist(log(distsims_median), breaks = 50, xlim = c(6,7.75))
+# # abline(v = log(distobs_median))
+# # summary(distsims_mean)
+
+distsims2<-unlist(st_nn(scsim2, sf_roads, returnDist = T)$dist)
+summary(distsims2)
+
+###Are sampled species random with respect to values of the mountains, 
+####or are they a biased sample of low relief areas?
+###Assemble a table of records 
+sampeffort_obs<-mamm_elev %>%
+  select(ASTERDEM_cropped) %>%
+  rename(elevation = ASTERDEM_cropped) %>%
+  mutate(TRI = mamm_tri$TRI, road_dist = distobs, source = "obs")
+sampeffort_sim<-mamm_elev_sim2 %>%
+  select(ASTERDEM_cropped) %>%
+  rename(elevation = ASTERDEM_cropped) %>%
+  mutate(TRI = mamm_tri_sim2$TRI, road_dist = distsims2, source = "sim")
+sampeffort<-sampeffort_obs %>%
+  bind_rows(sampeffort_sim) %>%
+  mutate(log.elevation = log(elevation), log.TRI = log(TRI), log.road_dist = log(road_dist))
+
+###MANOVA of sampling effort variables
+samp_manova<-manova(cbind(log.elevation, log.TRI, log.road_dist) ~ source, data = sampeffort)
+summary(samp_manova) #at least one variable's means differ between simulated and observed
+summary.aov(samp_manova) #all variables significantly differ
+sampeffort %>%
+  ggplot(mapping = aes(x = forcats::fct_rev(source), y = elevation)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Simulated", "Observed")) +
+  labs(x = NULL, y = "Occurrence record elevation (m)") +
+  coord_flip() +
+  theme_minimal()
+sampeffort %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = TRI)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Simulated", "Observed")) +
+  labs(x = NULL, y = "Occurrence record terrain ruggedness index") +
+  coord_flip() +
+  theme_minimal()
+sampeffort %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = road_dist)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_y_continuous(trans = "log10", n.breaks = 6) +
+  scale_x_discrete(labels = c("Simulated", "Observed")) +
+  labs(x = NULL, y = "Occurrence record distance from nearest road (m)") +
+  coord_flip() +
+  theme_minimal()
