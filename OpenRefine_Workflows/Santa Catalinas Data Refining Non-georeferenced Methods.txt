@@ -1,0 +1,109 @@
+-Import data file "Non-georeference_records.csv" into OpenRefine (no changes)
+-Create text facet of locality data
+-Click cluster button
+-Review & Combine suggested clusters:
+> CATALINA MTNS, UPPER SABINO CANYON(2 rows) and Catalina Mtns, Upper Sabino Canyon
+> CATALINA MTNS, MOLINO BASIN(3 rows) and Catalina Mtns, Molino Basin(3 rows)
+
+-Change method to Nearest neighbor
+-Cluster based on Levenshtein distance
+-Review & Combine suggested clusters:
+> CATALINA MTNS, MOLINO BASIN(6 rows) and Catalina Mtns, Molina Basin
+> Sabino Canyon(2 rows) and SABINE CANYON
+
+-Change distance metric to PPM
+-Review & Combine suggested clusters:
+> CATALINA H'WAY, INDIAN HILLS ESTATE, PIMA COUNTY, ARIZONA and INDIAN HILLS ESTATE, PIMA COUNTY, ARIZONA
+
+-Manually review and flag localities with insufficient detail to georeference
+>criteria: record obviously does not occur on SC Mts, record does not have enough detail to georeference
+
+-Export flagged and unflagged records separately; unflagged records proceed to batch georeferencing
+>Total flagged records: 171
+>Total unflagged records: 111
+
+-Batch georeference unflagged records
+
+[
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "locality string",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "CATALINA MTNS, UPPER SABINO CANYON",
+          "Catalina Mtns, Upper Sabino Canyon"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "CATALINA MTNS, UPPER SABINO CANYON"
+      },
+      {
+        "from": [
+          "CATALINA MTNS, MOLINO BASIN",
+          "Catalina Mtns, Molino Basin"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "CATALINA MTNS, MOLINO BASIN"
+      }
+    ],
+    "description": "Mass edit cells in column locality string"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "locality string",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "CATALINA MTNS, MOLINO BASIN",
+          "Catalina Mtns, Molina Basin"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "CATALINA MTNS, MOLINO BASIN"
+      },
+      {
+        "from": [
+          "Sabino Canyon",
+          "SABINE CANYON"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Sabino Canyon"
+      }
+    ],
+    "description": "Mass edit cells in column locality string"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "locality string",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "CATALINA H'WAY, INDIAN HILLS ESTATE, PIMA COUNTY, ARIZONA",
+          "INDIAN HILLS ESTATE, PIMA COUNTY, ARIZONA"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "CATALINA H'WAY, INDIAN HILLS ESTATE, PIMA COUNTY, ARIZONA"
+      }
+    ],
+    "description": "Mass edit cells in column locality string"
+  }
+]

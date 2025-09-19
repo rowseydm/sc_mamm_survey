@@ -517,48 +517,6 @@ ggplot(data = sf::st_as_sf(scboundary)) +
   geom_sf() +
   geom_sf(data = sf::st_as_sf(roads))
 
-###Code for calculating sampling bias but the package lowkey isn't very helpful for what we're doing
-####Consider removing once remainder of script is complete
-# gaz<-list(roads = roads)
-# mamm.sampbias<-calculate_bias(x = sd_prune_no_outliers %>%
-#                                 rename(species = scientificName) %>%
-#                                 dplyr::select(species, decimalLatitude, decimalLongitude),
-#                               gaz = gaz,
-#                               res = 0.0035,
-#                               restrict_sample = scboundary
-#                               ) #need a custom gazetteer with roads if we want to make this work...
-# summary(mamm.sampbias)
-# plot(mamm.sampbias)
-# 
-# scmamm.road.dists<-as.data.frame(mamm.sampbias$distance_rasters)
-# modplot.sampbias<-function (x, y, ...) 
-# {
-#   plo1 <- x$bias_estimate %>% pivot_longer(cols = contains("w_"), 
-#                                            names_to = "bias", values_to = "posterior_estimate") %>% 
-#     mutate(bias = gsub("w_", "", .data$bias)) %>% mutate(bias = fct_reorder(.data$bias, 
-#                                                                             .data$posterior_estimate, .fun = median, .desc = FALSE))
-#   plo2_w <- colMeans(x$bias_estimate)
-#   plo2_dist <- seq(0, y, length.out = 1000)
-#   plo2 <- data.frame(dist = plo2_dist, rate = plo2_w[4] * exp(-plo2_w[5:(length(plo2_w) - 
-#                                                                            1)] * plo2_dist), id = names(x$bias_estimate)[-c(1:4, 
-#                                                                                                                             ncol(x$bias_estimate))]) %>% mutate(id = gsub("w_", "", 
-#                                                                                                                                                                           .data$id)) %>% mutate(id = factor(.data$id, levels = levels(plo1$bias)))
-#   p1 <- ggplot(plo1) + geom_boxplot(aes(x = .data$bias, y = .data$posterior_estimate, 
-#                                         fill = .data$bias)) + scale_fill_viridis(discrete = TRUE) + 
-#     xlab("Biasing factor") + ylab("Posterior weight") + coord_flip() + 
-#     theme_bw() + theme(panel.grid.minor.x = element_blank(), 
-#                        panel.grid.major.y = element_blank(), legend.position = "none")
-#   p2 <- ggplot(plo2) + geom_point(aes(x = .data$dist, y = .data$rate, 
-#                                       color = .data$id)) + scale_color_viridis(discrete = TRUE) + 
-#     xlab("Distance to the bias [km]") + ylab("Sampling rate") + 
-#     theme_bw() + theme(panel.grid.minor.x = element_blank(), 
-#                        panel.grid.major.y = element_blank(), legend.title = element_blank(), 
-#                        legend.position = "bottom")
-#   out <- plot_grid(p1, p2, labels = c("A", "B"), ncol = 1)
-#   print(out)
-# }
-# modplot.sampbias(mamm.sampbias, y  = 4)
-
 #####SAMPLING EFFORT ANALYSIS#####
 ###Are specimens randomly sampled relative to elevation, terrain ruggedness, 
 ####or distance from roads?
@@ -614,18 +572,6 @@ distobs<-unlist(st_nn(sf_obs, sf_roads, returnDist = T)$dist)#extract observed d
 distobs_mean<-mean(distobs)
 distobs_median<-median(distobs)
 summary(distobs)
-
-###calculate distances between simulated points and roads
-# distsims<-lapply(scsim, function(x) unlist(st_nn(x, sf_roads, returnDist = T)$dist))
-# saveRDS(distsims, file = "distsims.rds")
-# distsims_mean<-unlist(lapply(distsims, mean))
-# distsims_median<-unlist(lapply(distsims, median))
-# # hist(log(distsims_mean), breaks = 50, xlim = c(6,7.75))
-# # abline(v = log(distobs_mean))
-# # summary(distsims_mean)
-# # hist(log(distsims_median), breaks = 50, xlim = c(6,7.75))
-# # abline(v = log(distobs_median))
-# # summary(distsims_mean)
 
 distsims2<-unlist(st_nn(scsim2, sf_roads, returnDist = T)$dist)
 summary(distsims2)

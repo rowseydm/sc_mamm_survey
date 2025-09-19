@@ -1,0 +1,54 @@
+-Import data file "SantaCatsSurveySpecimens+Tissues_2021-2023.xlsx" into OpenRefine (no changes)
+-Create text facet of locality data
+-Click cluster button
+-Review & Combine suggested clusters:
+[NO CLUSTERS FOUND]
+
+-Review locality for descriptions that lack detail for long/lat & 
+[ALL LOCALITIES HAVE SUFFICIENT DETAILS]
+
+-Click Cluster on locality text facet
+-Change method to nearest neighbor
+-cluster based on similarity
+>Santa Catalina Mts., Bear Wallow SE of culvert beneath General Hitchcock Hwy.(17 rows) + Santa Catalina Mts., Bear Wallow SE of culvert beneat General Hitchcock Hwy.
+Browse this cluster
+
+-Click Cluster on locality text facet
+-Change method to nearest neighbor with Distance Function as PPM
+-cluster based on similarity
+[NO CLUSTERS FOUND]
+
+-Sort verbatim Elevation by order.
+-Notate GBIFID of any specimans with large difference between verbatim elevation and DEM elevation (greater than 100)
+>3744741560
+>3744741301
+>4070420526
+>4070420525
+>4070420470
+>4070420468
+>4070420497
+>4070420495
+
+[
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "locality",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "Santa Catalina Mts., Bear Wallow SE of culvert beneath General Hitchcock Hwy.",
+          "Santa Catalina Mts., Bear Wallow SE of culvert beneat General Hitchcock Hwy."
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mts., Bear Wallow SE of culvert beneath General Hitchcock Hwy."
+      }
+    ],
+    "description": "Mass edit cells in column locality"
+  }
+]

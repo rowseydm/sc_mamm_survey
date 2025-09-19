@@ -1,0 +1,434 @@
+-Import data file "SantaCatsStudyArea_AllMammalRecords_pre2021.xlsx" into OpenRefine (no changes)
+-Create text facet of locality data
+-Click cluster button
+-Review & Combine suggested clusters:
+>Santa Catalina Mts(39 rows) + SANTA CATALINA MTS.(5 rows) + Santa Catalina Mts.
+>Tucson; Mt. Lemmon highway; 8 mi E(2 rows) + Tucson; Mt. Lemmon, highway; 8 mi E
+>Santa Catalina Mountains, Bear Canyon(19 rows) + Santa Catalina Mountains; Bear Canyon(2 rows)
+>Santa Catalina Mountains; 1 km N of Rose Canyon Lake(2 rows) + Santa Catalina Mountains; 1 km N of Rose Canyon Lake, Rose Canyon
+>8 mi N Tucson(5 rows) + Tucson; 8 mi N
+>Santa Catolina Mts, Coronado Natl Forest, Sunset Trail Head(5 rows) + Coronado Natl Forest, Santa Catolina Mts, Sunset Trail Head
+>ORACLE(31 rows) + Oracle(25 rows)
+>Oracle Ranger Station, N end  Santa Catalina Mts.(3 rows) + Oracle Ranger Station, N end Santa Catalina Mts.(2 rows)
+>Santa Catalina Mtns., Bear Wallow Campground(7 rows) + Santa Catalina Mtns. (Bear Wallow Campground)(2 rows)
+>Tucson; Sabino Canyon(9 rows) + Tucson, Sabino Canyon
+>Tucson, end N Campbell Ave.(153 rows) + end N Campbell Ave, Tucson(15 rows)
+>Santa Catalina Mountains, range, Pima Catalina Mts(2 rows) + Santa Catalina Mountains, range, Pima Santa Catalina Mts.
+>Molino Basin Campground, Santa Catalina Mtns + Molino Basin Campground, Santa Catalina Mtns.
+
+-Review locality for descriptions that lack detail for long/lat & are outside of study area
+>(blank)-1254
+>United States - Coronado National Forest (AZ)-4
+>United States - Arizona (AZ)-1
+>Tucson; 10 mi N-1
+>TUCSON, 7 MI N, 14 MI E OF-49
+>TUCSON, 18.5 MI NE OF-7
+>Tucson, 13 miles N-1
+>SANTA CATALINA MTS.,MT.LEMMON-2
+>Santa Catalina Mts., 16 mi NE Tucson-2
+>Santa Catalina Mts-45
+>Santa Catalina Mountains, nr. Tuscon-2
+>Santa Catalina Mountains, Coronado National Forest-2
+>Santa Catalina Mountains-6
+>Parents from Oracle-1
+>Oracle; 1 mi SE-1
+>ORACLE, 2 MI SW OF-1
+>ORACLE-56
+>near Oracle-3
+>MT. LEMMON-9
+>MOUNT LEMMON-3
+>FORT LOWELL; 8 MI E-1
+>FORT LOWELL AREA-1
+>Catalina Mts., foothills-1
+>9MI N TUCSON-29
+>8MI SE ORACLE-21
+>8MI N TUCSON-15
+>8.8 mi N, 3.9 mi E Tucson-1
+>8 MI. SE ORAELE-3
+>8 mi N Tucson-6
+>6MI SE ORACLE-21
+>6 mi SSE Oracle-6
+>5MI SE ORACLE-3
+>5 mi N, 10 mi E U. of A-1
+>3MI SE ORACLE-3
+>3 MI. SE ORAELE-1
+>20 MI NE UNIV. ARIZ., TUCSON-1
+>20 MI NE TUSCON-1
+>2.5MI N ORACLE-5
+>2.5 MI SE-1
+>2 mi S of-1
+>2 mi NE Fort Lowell-1
+>15MI NE TUCSON-3
+>12 miles N Tucson City Hall-1
+>12 km SW of Oracle-1
+>10MI SE ORACLE-6
+>10MI N TUCSON-25
+>10 MI N, 3 MI E OF TUCSON-2
+>0.5 MI SE-7
+>12 km SW of Oracle, Highway 77-9
+>7.5 mi SW of Oracle, Highway 77-2
+>Santa Catalina Mountains, range, Pima Catalina Mts-3
+>Tucson, 10 mi ENE; on Mt. Lemmon highway-1
+>Tucson, 14 mi ENE; Mt. Lemmon highway-4
+
+-Click Cluster on locality text facit
+-Change method to nearest neighbor
+-cluster based on similarity
+>Santa Catalina Mountains; Bear Wallow Campground + Santa Catalina Mountains; Bear Wallow Campgrounds
+>SANTA CATALINA MT.,PIMA CANYON,2980FT(2 rows) + SANTA CATALINA MTS,PIMA CANYON,2980FT(2 rows)
+>Molino Basin Campground, Santa Catalina Mtns(2 rows) + Molino Basin Campground, Santa Catalina Mts
+>SANTA CATALINA MTS.,SUMMERHAVEN(82 rows) + Santa Catalina Mts., Summerhaven(35 rows)
+>20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATALINA MTNS + 20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATATLINA MTNS
+
+-Click Cluster on locality text facit
+-Change method to nearest neighbor with Distance Function as PPM
+-cluster based on similarity
+>Santa Catalina Mountains, Bear Wallow(9 rows) + Santa Catalina Mountains; Bear Wallow Forest Camp(7 rows) +Santa Catalina Mountains; Bear Wallow Campground(2 rows) + Santa Catalina Mountains; Bear Wallow Camp
+>Sabino Canyon (midpoint), valley, Pima Santa Catalina Mts; Sabino Canyon(12 rows) + Sabino Canyon (midpoint), valley, Pima Catalina Mts; Sabino Canyon + Sabino Canyon (midpoint), valley, Pima St Catalina Mts; Sabino Canyon
+>SANTA CATALINA MTS.,MARBLE PK.(37 rows) + 
+SANTA CATALINA MTS.,MARBLE PK.,5600FT(5 rows) + SANTA CATALINA MTS.,MARBLE PEAK(4 rows)
+>Santa Catalina Mountains, Bear Wallow(9 rows) + Santa Catalina Mountains; Bear Wallow Camp
+>Bear Hollow Campground, Mt. Lemon + Mt. Lemmon, Bear Hollow Campground
+>Santa Catalina Mtns., Bear Wallow Campground(9 rows) + Santa Catalina Mtns.(Bear Wallow Campground)(3 rows)
+>20 MI NE UNIV. ARIZ., TUSCON; MOLINO BASIN, CATALINA MTS.(6 rows) + 20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATALINA MTNS(2 rows)
+>SANTA CATALINA MTS,T11 S,R16 E,SEC 29,NE Q,6400FT(2 rows) + SANTA CATALINA MTS,T11 S,R16 E,SEC 29,NE Q
+>SANTA CATALINA MTS.,MARBLE PK.(37 rows) + SANTA CATALINA MTS.,MARBLE PEAK(4 rows)
+>Santa Catalina Mountains; Bear Wallow Campground(2 rows) + Santa Catalina Mountains; Bear Wallow Camp
+
+-Sort verbatim Elevation by order.
+-Notate GBIFID of any specimans with large difference between verbatim elevation and DEM elevation (greater than 120 [decided based on our study having a max difference of 120, save one odd sample)
+2804498243
+2804496533
+2804491590
+2804490402
+2804482527
+2804499945
+2804498909
+2804492139
+2804485735
+2804500389
+2804480513
+4174650870
+2804481734
+1145897161
+1145897154
+1145897146
+1702690058
+1702689980
+1702720090
+1702720077
+911676965
+911676938
+911676925
+911676910
+911676881
+911670006
+911669981
+911669955
+911668066
+911668060
+911668056
+46305814
+1702689380
+1145839130
+1145717487
+1145717465
+1145717464
+1145717460
+1145717454
+1145717451
+1145717446
+1145717434
+1145717433
+1145717430
+1145717427
+1145717422
+1145717405
+1145717402
+1145717399
+1145717368
+1145710874
+1145710862
+1145710846
+1145710831
+1145710814
+2872148328
+
+
+[
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "locality",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "Santa Catalina Mts",
+          "SANTA CATALINA MTS.",
+          "Santa Catalina Mts."
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mts"
+      },
+      {
+        "from": [
+          "Tucson; Mt. Lemmon highway; 8 mi E",
+          "Tucson; Mt. Lemmon, highway; 8 mi E"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Tucson; Mt. Lemmon highway; 8 mi E"
+      },
+      {
+        "from": [
+          "Santa Catalina Mountains, Bear Canyon",
+          "Santa Catalina Mountains; Bear Canyon"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mountains, Bear Canyon"
+      },
+      {
+        "from": [
+          "Santa Catalina Mountains; 1 km N of Rose Canyon Lake",
+          "Santa Catalina Mountains; 1 km N of Rose Canyon Lake, Rose Canyon"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mountains; 1 km N of Rose Canyon Lake"
+      },
+      {
+        "from": [
+          "8 mi N Tucson",
+          "Tucson; 8 mi N"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "8 mi N Tucson"
+      },
+      {
+        "from": [
+          "Santa Catolina Mts, Coronado Natl Forest, Sunset Trail Head",
+          "Coronado Natl Forest, Santa Catolina Mts, Sunset Trail Head"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catolina Mts, Coronado Natl Forest, Sunset Trail Head"
+      },
+      {
+        "from": [
+          "ORACLE",
+          "Oracle"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "ORACLE"
+      },
+      {
+        "from": [
+          "Oracle Ranger Station, N end  Santa Catalina Mts.",
+          "Oracle Ranger Station, N end Santa Catalina Mts."
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Oracle Ranger Station, N end  Santa Catalina Mts."
+      },
+      {
+        "from": [
+          "Santa Catalina Mtns., Bear Wallow Campground",
+          "Santa Catalina Mtns. (Bear Wallow Campground)"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mtns., Bear Wallow Campground"
+      },
+      {
+        "from": [
+          "Tucson; Sabino Canyon",
+          "Tucson, Sabino Canyon"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Tucson; Sabino Canyon"
+      },
+      {
+        "from": [
+          "Tucson, end N Campbell Ave.",
+          "end N Campbell Ave, Tucson"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Tucson, end N Campbell Ave."
+      },
+      {
+        "from": [
+          "Santa Catalina Mountains, range, Pima Catalina Mts",
+          "Santa Catalina Mountains, range, Pima Santa Catalina Mts."
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mountains, range, Pima Catalina Mts"
+      },
+      {
+        "from": [
+          "Molino Basin Campground, Santa Catalina Mtns",
+          "Molino Basin Campground, Santa Catalina Mtns."
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Molino Basin Campground, Santa Catalina Mtns"
+      }
+    ],
+    "description": "Mass edit cells in column locality"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "locality",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "Santa Catalina Mountains, Bear Wallow",
+          "Santa Catalina Mountains; Bear Wallow Forest Camp",
+          "Santa Catalina Mountains; Bear Wallow Camp",
+          "Santa Catalina Mountains; Bear Wallow Campground",
+          "Santa Catalina Mountains; Bear Wallow Campgrounds"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mountains, Bear Wallow"
+      },
+      {
+        "from": [
+          "Sabino Canyon (midpoint), valley, Pima Santa Catalina Mts; Sabino Canyon",
+          "Sabino Canyon (midpoint), valley, Pima Catalina Mts; Sabino Canyon",
+          "Sabino Canyon (midpoint), valley, Pima St Catalina Mts; Sabino Canyon"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Sabino Canyon (midpoint), valley, Pima Santa Catalina Mts; Sabino Canyon"
+      },
+      {
+        "from": [
+          "20 MI NE UNIV. ARIZ., TUSCON; MOLINO BASIN, CATALINA MTS.",
+          "20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATALINA MTNS",
+          "20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATATLINA MTNS"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "20 MI NE UNIV. ARIZ., TUSCON; MOLINO BASIN, CATALINA MTS."
+      },
+      {
+        "from": [
+          "SANTA CATALINA MTS.,MARBLE PK.",
+          "SANTA CATALINA MTS.,MARBLE PK.,5600FT",
+          "SANTA CATALINA MTS.,MARBLE PEAK"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "SANTA CATALINA MTS.,MARBLE PK."
+      },
+      {
+        "from": [
+          "Santa Catalina Mountains; Bear Wallow Camp",
+          "Santa Catalina Mountains; Bear Wallow Campground",
+          "Santa Catalina Mountains; Bear Wallow Campgrounds"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mountains; Bear Wallow Camp"
+      },
+      {
+        "from": [
+          "SANTA CATALINA MTS.,MARBLE PK.",
+          "SANTA CATALINA MTS.,MARBLE PK.,5600FT"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "SANTA CATALINA MTS.,MARBLE PK."
+      },
+      {
+        "from": [
+          "Santa Catalina Mtns., Bear Wallow Campground",
+          "Santa Catalina Mtns.(Bear Wallow Campground)"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Santa Catalina Mtns., Bear Wallow Campground"
+      },
+      {
+        "from": [
+          "20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATALINA MTNS",
+          "20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATATLINA MTNS"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATALINA MTNS"
+      },
+      {
+        "from": [
+          "Bear Hollow Campground, Mt. Lemon",
+          "Mt. Lemmon, Bear Hollow Campground"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Bear Hollow Campground, Mt. Lemon"
+      },
+      {
+        "from": [
+          "Molino Basin Campground, Santa Catalina Mtns",
+          "Molino Basin Campground, Santa Catalina Mts"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "Molino Basin Campground, Santa Catalina Mtns"
+      },
+      {
+        "from": [
+          "20 MI NE UNIV. ARIZ., TUSCON; MOLINO BASIN, CATALINA MTS.",
+          "20 MI NE UNIV. ARIZONA, TUSCON, MOLINO BASIN, CATALINA MTNS"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "20 MI NE UNIV. ARIZ., TUSCON; MOLINO BASIN, CATALINA MTS."
+      },
+      {
+        "from": [
+          "SANTA CATALINA MT.,PIMA CANYON,2980FT",
+          "SANTA CATALINA MTS,PIMA CANYON,2980FT"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "SANTA CATALINA MT.,PIMA CANYON,2980FT"
+      },
+      {
+        "from": [
+          "SANTA CATALINA MTS,T11 S,R16 E,SEC 29,NE Q,6400FT",
+          "SANTA CATALINA MTS,T11 S,R16 E,SEC 29,NE Q"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "SANTA CATALINA MTS,T11 S,R16 E,SEC 29,NE Q,6400FT"
+      },
+      {
+        "from": [
+          "SANTA CATALINA MTS.,MARBLE PK.",
+          "SANTA CATALINA MTS.,MARBLE PEAK"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "SANTA CATALINA MTS.,MARBLE PK."
+      }
+    ],
+    "description": "Mass edit cells in column locality"
+  }
+]
