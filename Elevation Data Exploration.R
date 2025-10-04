@@ -592,7 +592,7 @@ sampeffort<-sampeffort_obs %>%
   mutate(log.elevation = log(elevation), log.TRI = log(TRI), log.road_dist = log(road_dist))
 
 ###MANOVA of sampling effort variables
-samp_manova<-manova(cbind(log.elevation, log.TRI, log.road_dist) ~ source, data = sampeffort)
+samp_manova<-manova(cbind(elevation, TRI, road_dist) ~ source, data = sampeffort)
 summary(samp_manova) #at least one variable's means differ between simulated and observed
 summary.aov(samp_manova) #all variables significantly differ
 sampeffort %>%
