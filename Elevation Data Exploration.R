@@ -365,7 +365,7 @@ sd_prune_no_outliers %>%
   facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
-
+###Sample by year
 sd_prune_no_outliers %>%
   ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
   geom_histogram(binwidth = 1, position = "identity", alpha = 0.7) +
@@ -504,6 +504,8 @@ elev_extend<-
   filter(min.ext == TRUE | max.ext == TRUE) 
 # elev_extend %>%
 #   write.csv(file = "SC elevational extensions.csv")
+
+
   
 ###Quantify sampling bias in historical and contemporary records
 scboundary_df<-as.data.frame(terra::vect(basename("Santa_Catalina_StudyArea_Polygon_LargestOnly.shp"), 
@@ -620,3 +622,66 @@ sampeffort %>%
   labs(x = NULL, y = "Occurrence record distance from nearest road (m)") +
   coord_flip() +
   theme_minimal()
+
+###Sample by decade, INCLUDING UNREFINED RECORDS
+###select columns of old filtered data to minimum necessary, add filtered status
+historic_minimal <- historic_data %>%
+  select(institutionCode, catalogNumber, scientificName, eventDate, basisOfRecord) %>%
+  mutate(filteringStatus = "filtered")
+###select columns of all of our samples to minimum necessary, add filtered status
+our_minimal <- our_data %>%
+  select(institutionCode, catalogNumber, scientificName, eventDate, basisOfRecord) %>%
+  mutate(filteringStatus = "filtered")
+###Read in unrefined records, filter to minimum columns necessary, add unfiltered status
+gbif_unrefined_data<-read.csv(file = "Raw Unrefined Records/pre2021_records_unrefined.csv" ) %>%
+  select(institutionCode, catalogNumber, scientificName, eventDate, basisOfRecord) %>%
+  mutate_at(.vars = vars(eventDate), .funs = as.Date)
+usnm_amnh_data_minimal<-usnm_amnh_data %>%
+  select(institutionCode, catalogNumber, scientificName, eventDate, basisOfRecord) 
+old_unrefined_data <- gbif_unrefined_data %>% bind_rows(usnm_amnh_data_minimal) %>%
+  mutate(filteringStatus = "unfiltered")
+###bind rows of filtered and unfiltered data frames
+decadal_data<-historic_minimal %>%
+  bind_rows(our_minimal, old_unrefined_data) %>%
+  mutate(basisOfRecord = case_when(
+    basisOfRecord == "PRESERVED_SPECIMEN" ~ "Preserved Specimen",
+    basisOfRecord == "OCCURRENCE" ~ "Preserved Specimen",
+    basisOfRecord == "MACHINE_OBSERVATION" ~ "Observation",
+    basisOfRecord == "HUMAN_OBSERVATION" ~ "Observation",
+    basisOfRecord == "MATERIAL_SAMPLE" ~ "Material Sample"
+  ))
+
+###set up palettes
+decadal_cols<-c("Observation" = "deepskyblue", 
+                "Material Sample" = "green3", 
+                "Preserved Specimen" = "darkorange")
+decadal_alpha<-c("filtered" = 0.7,
+                 "unfiltered" = 0)
+
+decadal_data %>%
+  ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), 
+                       fill = factor(basisOfRecord,
+                                     levels = c("Material Sample",
+                                                "Observation",
+                                                "Preserved Specimen")), 
+                       color = factor(basisOfRecord,
+                                      levels = c("Material Sample",
+                                                 "Observation",
+                                                 "Preserved Specimen")), 
+                       alpha = factor(filteringStatus, 
+                                      levels = c("unfiltered","filtered")))) +
+  geom_histogram(binwidth = 10
+                 , position = "identity"
+  ) +
+  scale_x_continuous(breaks = seq(1800, 2020, 20)) +
+  labs(title = "Santa Catalinas Mammal Occurrence Records Per Year",
+       fill = "Basis of Record", alpha = "Filtering Status") +
+  xlab("Decade") +
+  ylab("Number of Records") +
+  scale_fill_manual(values = decadal_cols, drop = FALSE) +
+  scale_color_manual(values = decadal_cols) +
+  scale_alpha_manual(values = c("unfiltered" = 0, "filtered" = 0.5),
+                     labels = c("unfiltered", "filtered")) +
+  guides(color = "none") +
+  theme_minimal()
+
