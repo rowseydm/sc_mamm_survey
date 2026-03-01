@@ -255,16 +255,29 @@ sd_prune_no_outliers <- sd_prune_no_outliers_pero
 sd_prune_no_outliers['scientificName'][sd_prune_no_outliers['scientificName'] == "Peromyscus leucopus" |
                                          sd_prune_no_outliers['scientificName'] == "Peromyscus melanotis" |
                                          sd_prune_no_outliers['scientificName'] == "Peromyscus sonoriensis" |
-                                         sd_prune_no_outliers['scientificName'] == "Peromyscus maniculatus" ] <- "Peromyscus sonoriensis.melanotis"
+                                         sd_prune_no_outliers['scientificName'] == "Peromyscus maniculatus" ] <- "Peromyscus melanotis"
   
-# write.csv(sd_prune_no_outliers, file = "SC_All_Records_No_Outliers.csv")
+#write.csv(sd_prune_no_outliers, file = "SC_All_Records_No_Outliers.csv")
+sd_prune_smallmamm<-sd_prune_no_outliers %>%
+  filter(order %in% c("Rodentia", "Eulipotyphla"))
 
+sd_prune_smallmamm %>%
+  group_by(basisOfRecord) %>%
+  summarise(n = n())
+
+sd_prune_smallmamm %>%
+  group_by(family) %>%
+  summarise(n = n())
+
+sd_prune_smallmamm %>%
+  group_by(scientificName) %>%
+  summarise(n = n())
 
 basisCols<-c(HUMAN_OBSERVATION = "deepskyblue", 
              MATERIAL_SAMPLE = "green3", 
              PRESERVED_SPECIMEN = "darkorange")
 
-sd_prune_no_outliers %>%
+sd_prune_smallmamm %>%
   filter(family %in% c("Heteromyidae", "Geomyidae")) %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -281,7 +294,7 @@ sd_prune_no_outliers %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune_no_outliers %>%
+sd_prune_smallmamm %>%
   filter(family == "Cricetidae") %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -298,7 +311,7 @@ sd_prune_no_outliers %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune_no_outliers %>%
+sd_prune_smallmamm %>%
   filter(family == "Sciuridae") %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
@@ -315,25 +328,27 @@ sd_prune_no_outliers %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune_no_outliers %>%
-  filter(order %in% c("Artiodactyla", "Lagomorpha") ) %>%
-  ggplot(mapping = aes(x = DEMElevationInMeters,
-                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
-  geom_boxplot(position = position_dodge2(preserve = "single")) +
-  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
-       subtitle = "Orders Artiodactyla and Lagomorpha",
-       x = "DEM Elevation (m)", y = "Species",
-       fill = "Basis of Record") +
-  scale_fill_manual(values = basisCols, limits = rev, 
-                    labels = c("Preserved specimen", "Human observation")) +
-  scale_y_discrete(limits = rev) +
-  theme_minimal() +
-  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
-  theme(axis.text.y = element_text(face = "italic"),
-        strip.placement = "outside")
+# sd_prune_no_outliers %>%
+#   filter(order %in% c("Artiodactyla", "Lagomorpha") ) %>%
+#   ggplot(mapping = aes(x = DEMElevationInMeters,
+#                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+#   geom_boxplot(position = position_dodge2(preserve = "single")) +
+#   labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+#        subtitle = "Orders Artiodactyla and Lagomorpha",
+#        x = "DEM Elevation (m)", y = "Species",
+#        fill = "Basis of Record") +
+#   scale_fill_manual(values = basisCols, limits = rev, 
+#                     labels = c("Preserved specimen", "Human observation")) +
+#   scale_y_discrete(limits = rev) +
+#   theme_minimal() +
+#   facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+#   theme(axis.text.y = element_text(face = "italic"),
+#         strip.placement = "outside")
 
-sd_prune_no_outliers %>%
-  filter(order %in% c("Carnivora","Eulipotyphla")) %>%
+sd_prune_smallmamm %>%
+  filter(order %in% c(
+    # "Carnivora",
+    "Eulipotyphla")) %>%
   ggplot(mapping = aes(x = DEMElevationInMeters,
                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
   geom_boxplot(position = position_dodge2(preserve = "single")) +
@@ -349,24 +364,24 @@ sd_prune_no_outliers %>%
   theme(axis.text.y = element_text(face = "italic"),
         strip.placement = "outside")
 
-sd_prune_no_outliers %>%
-  filter(order == "Chiroptera") %>% 
-  ggplot(mapping = aes(x = DEMElevationInMeters,
-                       y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
-  geom_boxplot(position = position_dodge2(preserve = "single")) +
-  labs(title = "Elevational Distributions of Santa Catalinas Mammals",
-       subtitle = "Order Chiroptera",
-       x = "DEM Elevation (m)", y = "Species",
-       fill = "Basis of Record") +
-  scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
-                    labels = c("Preserved specimen", "Human observation")) +
-  scale_y_discrete(limits = rev) +
-  theme_minimal() +
-  facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
-  theme(axis.text.y = element_text(face = "italic"),
-        strip.placement = "outside")
+# sd_prune_no_outliers %>%
+#   filter(order == "Chiroptera") %>% 
+#   ggplot(mapping = aes(x = DEMElevationInMeters,
+#                        y = reorder(scientificName, as.numeric(as.factor(paste(family, scientificName)))), fill = basisOfRecord)) +
+#   geom_boxplot(position = position_dodge2(preserve = "single")) +
+#   labs(title = "Elevational Distributions of Santa Catalinas Mammals",
+#        subtitle = "Order Chiroptera",
+#        x = "DEM Elevation (m)", y = "Species",
+#        fill = "Basis of Record") +
+#   scale_fill_manual(values = basisCols, drop = FALSE, limits = rev, 
+#                     labels = c("Preserved specimen", "Human observation")) +
+#   scale_y_discrete(limits = rev) +
+#   theme_minimal() +
+#   facet_grid(family ~ ., scales = "free_y", space = "free_y", switch = "y")+
+#   theme(axis.text.y = element_text(face = "italic"),
+#         strip.placement = "outside")
 ###Sample by year
-sd_prune_no_outliers %>%
+sd_prune_no_smallmamm %>%
   ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
   geom_histogram(binwidth = 1, position = "identity", alpha = 0.7) +
   scale_x_continuous(breaks = seq(1875, 2025, 20)) +
@@ -377,37 +392,37 @@ sd_prune_no_outliers %>%
                     labels = c("Preserved specimen", "Material sample", "Human observation")) +
   theme_minimal()
 
-sd_prune_no_outliers %>%
+sd_prune_smallmamm %>%
   ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
   geom_density(bw = 1, position = "identity", alpha = 0.7) +
   scale_x_continuous(breaks = seq(1875, 2025, 20)) +
   theme_minimal()
 
-##For Savage to analyze:
-###Ectoparasite prevalence from our survey
-our_data %>%
-  dplyr::select(recordNumber, preparations) %>%
-  filter(preparations == 'ectos') %>%
-  filter(!duplicated(incomparables = FALSE, recordNumber))
-  ###123 unique ecto entries
-  ###369 unique recordNumbers
-
-####Burn status
-our_data %>%
-  dplyr::select(recordNumber, burnStatus) %>%
-  filter(burnStatus == 'unburned') %>%
-  filter(!duplicated(incomparables = FALSE, recordNumber))
-  ###55 unique "burned" records
-  ###314 unique "unburned" records
-  ###369 unique recordNumbers
+# ####Burn status
+# our_data %>%
+#   dplyr::select(recordNumber, burnStatus) %>%
+#   filter(burnStatus == 'unburned') %>%
+#   filter(!duplicated(incomparables = FALSE, recordNumber))
+#   ###55 unique "burned" records
+#   ###314 unique "unburned" records
+#   ###369 unique recordNumbers
 
 ####Min, max, med elevation (and standard devation) for each species (or just summary statistics on elevation)
-  ##parallel with just "our_data" and one with all species "sd_prune_no_outliers", create table of data
-sd_prune_no_outliers %>%
+  ##parallel with just "our_data" and one with all species "sd_prune_smallmamm", create table of data
+sd_prune_smallmamm %>%
   dplyr::select(scientificName, DEMElevationInMeters) %>%
-  summarise(n = n(), min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), mean = mean(DEMElevationInMeters), sd = sd(DEMElevationInMeters),.by = scientificName) %>%
+  summarise(n = n(), min = min(DEMElevationInMeters), 
+            max = max(DEMElevationInMeters), 
+            mean = mean(DEMElevationInMeters), 
+            sd = sd(DEMElevationInMeters),
+            quantile = quantile(DEMElevationInMeters, 0.05),
+            range = max(DEMElevationInMeters) - min(DEMElevationInMeters),
+            .by = scientificName) %>%
   arrange(scientificName) %>%
-  print(n = 66)
+  print(n = 66) -> smallmamm_elev_analysis
+
+View(smallmamm_elev_analysis)
+View(smallmamm_elev_analysis %>% filter(n >= 15))
   
 ###Trap success by site and habitat
 table(our_data_unique$scientificName, our_data_unique$site)
@@ -419,12 +434,12 @@ aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$habita
 aggregate(our_data_unique$verbatimElevationInMeters, list(our_data_unique$site), mean)
 # Various by-species summary statistics
 our_data_unique %>%
-  summarise(n= n(), min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), 
+  summarise(n= n(), min = min(DEMElevationInMeters), max = max(DEMElevationInMeters), quantile = quantile(DEMElevationInMeters, 0.05),
             .by = scientificName) %>%
   print(n=65)
 
 # Historical records only
-historic_data <- sd_prune_no_outliers %>%
+historic_data <- sd_prune_smallmamm %>%
   filter(recordSource != "ASU post-2020")
 # records of historical specimens by basis of record
 historic_data %>%
@@ -446,7 +461,7 @@ historic_data %>%
   print(n = 66)
 
 
-sd_prune_no_outliers %>%
+sd_prune_smallmamm %>%
   dplyr::select(scientificName, DEMElevationInMeters) %>%
   summarise(n = n(), min = min(DEMElevationInMeters), 
             max = max(DEMElevationInMeters), 
@@ -466,7 +481,7 @@ sd_prune_no_outliers %>%
 
 
 # Density plot of samples relative to elevation
-sd_prune_no_outliers %>%
+sd_prune_smallmamm %>%
   ggplot(mapping = aes(x = (DEMElevationInMeters))) +
   geom_density() +
   scale_x_continuous(limits = c(800, 3000)) +
@@ -481,7 +496,7 @@ our_data_unique %>%
 
 ###At this point we need to split the recent samples back out of the no-outliers
 ####because we have changed the names of the montane Peromyscus
-our_data_unique_p <-sd_prune_no_outliers %>%
+our_data_unique_p <-sd_prune_smallmamm %>%
   filter(recordSource=="ASU post-2020")
   
 #filter historic records to the 15 species sampled in our survey
@@ -545,7 +560,7 @@ scsim2<-sf::st_sample(sf_scpolygon, size = 10000)
 
 
 ###Observed and simulated elevations of records
-mamm_elev<-extract(scrast, sd_prune_no_outliers %>%
+mamm_elev<-extract(scrast, sd_prune_smallmamm %>%
                      select(decimalLongitude, decimalLatitude))
 # mamm_elev_sim<-lapply(lapply(scsim, vect), function(x) extract(scrast, x))
 mamm_elev_sim2<-extract(scrast, vect(scsim2))
@@ -553,7 +568,7 @@ summary(mamm_elev)
 summary(mamm_elev_sim2)
 
 ###Observed and simulated terrain ruggedness index for records
-mamm_tri<-extract(sc_tri, sd_prune_no_outliers %>%
+mamm_tri<-extract(sc_tri, sd_prune_smallmamm %>%
                     select(decimalLongitude, decimalLatitude)) #calculate TRI for sampled points
 # mamm_tri_sim<-lapply(lapply(scsim, vect), function(x) extract(sc_tri, x))
 mamm_tri_sim2<-extract(sc_tri, vect(scsim2))
@@ -562,7 +577,7 @@ summary(mamm_tri_sim2)
 
 ###calculate distances between actual specimens and roads
 ####First convert the various data file types into sf
-sf_obs<-sf::st_as_sf(sd_prune_no_outliers %>%
+sf_obs<-sf::st_as_sf(sd_prune_smallmamm %>%
                        rename(species = scientificName) %>%
                        dplyr::select(species, 
                                      decimalLongitude, 
@@ -623,6 +638,169 @@ sampeffort %>%
   coord_flip() +
   theme_minimal()
 
+
+###Now do the same as above but for historical and modern records simultaneously
+###Observed elevations of records
+mamm_elev_ours<-extract(scrast, sd_prune_smallmamm %>%
+                          filter(recordSource == "ASU post-2020") %>%
+                          select(decimalLongitude, decimalLatitude))
+mamm_elev_old<-extract(scrast, sd_prune_smallmamm %>%
+                         filter(recordSource != "ASU post-2020") %>%
+                         select(decimalLongitude, decimalLatitude))
+summary(mamm_elev_ours)
+summary(mamm_elev_old)
+
+###Observed and simulated terrain ruggedness index for records
+mamm_tri_ours<-extract(sc_tri, sd_prune_smallmamm %>%
+                         filter(recordSource == "ASU post-2020") %>%
+                         select(decimalLongitude, decimalLatitude)) #calculate TRI for sampled points
+mamm_tri_old<-extract(sc_tri, sd_prune_smallmamm %>%
+                         filter(recordSource != "ASU post-2020") %>%
+                         select(decimalLongitude, decimalLatitude)) #calculate TRI for sampled points
+summary(mamm_tri_ours)
+summary(mamm_tri_old)
+
+###calculate distances between actual specimens and roads
+####First convert the various data file types into sf
+sf_obs_ours<-sf::st_as_sf(sd_prune_smallmamm %>%
+                            filter(recordSource == "ASU post-2020") %>%
+                            rename(species = scientificName) %>%
+                            dplyr::select(species,
+                                          decimalLongitude,
+                                          decimalLatitude),
+                          coords = c(2:3),
+                          crs="epsg:4326")
+sf_obs_old<-sf::st_as_sf(sd_prune_smallmamm %>%
+                            filter(recordSource != "ASU post-2020") %>%
+                            rename(species = scientificName) %>%
+                            dplyr::select(species,
+                                          decimalLongitude,
+                                          decimalLatitude),
+                          coords = c(2:3),
+                          crs="epsg:4326")
+distobs_ours<-unlist(st_nn(sf_obs_ours, sf_roads, returnDist = T)$dist)#extract observed distances and compile them into a numeric vector
+distobs_old<-unlist(st_nn(sf_obs_old, sf_roads, returnDist = T)$dist)#extract observed distances and compile them into a numeric vector
+distobs_ours_mean<-mean(distobs_ours)
+distobs_old_mean<-mean(distobs_old)
+distobs_ours_median<-median(distobs_ours)
+distobs_old_median<-median(distobs_old)
+summary(distobs_ours)
+summary(distobs_old)
+
+###Are sampled species random with respect to values of the mountains, 
+####or are they a biased sample of low relief areas?
+###Assemble a table of records 
+sampeffort_obs_ours<-mamm_elev_ours %>%
+  select(ASTERDEM_cropped) %>%
+  rename(elevation = ASTERDEM_cropped) %>%
+  mutate(TRI = mamm_tri_ours$TRI, road_dist = distobs_ours, source = "obs_ours")
+sampeffort_obs_old<-mamm_elev_old %>%
+  select(ASTERDEM_cropped) %>%
+  rename(elevation = ASTERDEM_cropped) %>%
+  mutate(TRI = mamm_tri_old$TRI, road_dist = distobs_old, source = "obs_old")
+
+sampeffort_ours<-sampeffort_obs_ours %>%
+  bind_rows(sampeffort_sim) %>%
+  mutate(log.elevation = log(elevation), log.TRI = log(TRI), log.road_dist = log(road_dist))
+sampeffort_old<-sampeffort_obs_old %>%
+  bind_rows(sampeffort_sim) %>%
+  mutate(log.elevation = log(elevation), log.TRI = log(TRI), log.road_dist = log(road_dist))
+
+sampeffort_comp<-sampeffort_obs_ours %>%
+  bind_rows(sampeffort_obs_old) %>%
+  mutate(log.elevation = log(elevation), log.TRI = log(TRI), log.road_dist = log(road_dist))
+
+
+###MANOVA of sampling effort variables
+samp_manova_ours<-manova(cbind(elevation, TRI, road_dist) ~ source, data = sampeffort_ours)
+summary(samp_manova_ours) #at least one variable's means differ between simulated and observed
+summary.aov(samp_manova_ours) #all variables significantly differ
+sampeffort_ours %>%
+  ggplot(mapping = aes(x = forcats::fct_rev(source), y = elevation)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Simulated", "Observed (2021-2023 survey)")) +
+  labs(x = NULL, y = "Occurrence record elevation (m)") +
+  coord_flip() +
+  theme_minimal()
+sampeffort_ours %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = TRI)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Simulated", "Observed (2021-2023 survey)")) +
+  labs(x = NULL, y = "Occurrence record terrain ruggedness index") +
+  coord_flip() +
+  theme_minimal()
+sampeffort_ours %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = road_dist)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_y_continuous(trans = "log10", n.breaks = 6) +
+  scale_x_discrete(labels = c("Simulated", "Observed (2021-2023 survey)")) +
+  labs(x = NULL, y = "Occurrence record distance from nearest road (m)") +
+  coord_flip() +
+  theme_minimal()
+
+samp_manova_old<-manova(cbind(elevation, TRI, road_dist) ~ source, data = sampeffort_old)
+summary(samp_manova_old) #at least one variable's means differ between simulated and observed
+summary.aov(samp_manova_old) #all variables significantly differ
+sampeffort_old %>%
+  ggplot(mapping = aes(x = forcats::fct_rev(source), y = elevation)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Simulated", "Observed (historical)")) +
+  labs(x = NULL, y = "Occurrence record elevation (m)") +
+  coord_flip() +
+  theme_minimal()
+sampeffort_old %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = TRI)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Simulated", "Observed (historical)")) +
+  labs(x = NULL, y = "Occurrence record terrain ruggedness index") +
+  coord_flip() +
+  theme_minimal()
+sampeffort_old %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = road_dist)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_y_continuous(trans = "log10", n.breaks = 6) +
+  scale_x_discrete(labels = c("Simulated", "Observed (historical)")) +
+  labs(x = NULL, y = "Occurrence record distance from nearest road (m)") +
+  coord_flip() +
+  theme_minimal()
+
+samp_manova_comp<-manova(cbind(elevation, TRI, road_dist) ~ source, data = sampeffort_comp)
+summary(samp_manova_comp) #at least one variable's means differ between simulated and observed
+summary.aov(samp_manova_comp) #all variables significantly differ
+sampeffort_comp %>%
+  ggplot(mapping = aes(x = forcats::fct_rev(source), y = elevation)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Observed (2021-2023 survey)", "Observed (historical)")) +
+  labs(x = NULL, y = "Occurrence record elevation (m)") +
+  coord_flip() +
+  theme_minimal()
+sampeffort_comp %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = TRI)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = c("Observed (2021-2023 survey)", "Observed (historical)")) +
+  labs(x = NULL, y = "Occurrence record terrain ruggedness index") +
+  coord_flip() +
+  theme_minimal()
+sampeffort_comp %>%
+  ggplot(mapping = aes( x = forcats::fct_rev(source), y = road_dist)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  scale_y_continuous(trans = "log10", n.breaks = 6) +
+  scale_x_discrete(labels = c("Observed (2021-2023 survey)", "Observed (historical)")) +
+  labs(x = NULL, y = "Occurrence record distance from nearest road (m)") +
+  coord_flip() +
+  theme_minimal()
+
+
+
 ###Sample by decade, INCLUDING UNREFINED RECORDS
 ###select columns of old filtered data to minimum necessary, add filtered status
 historic_minimal <- historic_data %>%
@@ -642,46 +820,44 @@ old_unrefined_data <- gbif_unrefined_data %>% bind_rows(usnm_amnh_data_minimal) 
   mutate(filteringStatus = "unfiltered")
 ###bind rows of filtered and unfiltered data frames
 decadal_data<-historic_minimal %>%
-  bind_rows(our_minimal, old_unrefined_data) %>%
+  bind_rows(old_unrefined_data) %>%
   mutate(basisOfRecord = case_when(
     basisOfRecord == "PRESERVED_SPECIMEN" ~ "Preserved Specimen",
     basisOfRecord == "OCCURRENCE" ~ "Preserved Specimen",
     basisOfRecord == "MACHINE_OBSERVATION" ~ "Observation",
     basisOfRecord == "HUMAN_OBSERVATION" ~ "Observation",
     basisOfRecord == "MATERIAL_SAMPLE" ~ "Material Sample"
-  ))
+  )) %>%
+  filter(basisOfRecord == "Preserved Specimen", eventDate > "1849-12-31")
+
+historic_minimal %>% 
+  bind_rows(old_unrefined_data) %>%
+  mutate(basisOfRecord = case_when(
+    basisOfRecord == "PRESERVED_SPECIMEN" ~ "Preserved Specimen",
+    basisOfRecord == "OCCURRENCE" ~ "Preserved Specimen",
+    basisOfRecord == "MACHINE_OBSERVATION" ~ "Observation",
+    basisOfRecord == "HUMAN_OBSERVATION" ~ "Observation",
+    basisOfRecord == "MATERIAL_SAMPLE" ~ "Material Sample"
+  )) %>% filter(basisOfRecord == "Preserved Specimen", eventDate < "1849-12-31")
 
 ###set up palettes
-decadal_cols<-c("Observation" = "deepskyblue", 
-                "Material Sample" = "green3", 
-                "Preserved Specimen" = "darkorange")
-decadal_alpha<-c("filtered" = 0.7,
-                 "unfiltered" = 0)
+decadal_cols<-c(filtered = "#7ebe00",
+                 unfiltered = "#fae7b9")
 
 decadal_data %>%
-  ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), 
-                       fill = factor(basisOfRecord,
-                                     levels = c("Material Sample",
-                                                "Observation",
-                                                "Preserved Specimen")), 
-                       color = factor(basisOfRecord,
-                                      levels = c("Material Sample",
-                                                 "Observation",
-                                                 "Preserved Specimen")), 
-                       alpha = factor(filteringStatus, 
-                                      levels = c("unfiltered","filtered")))) +
+  ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y"))
+                       , fill = factor(filteringStatus,
+                                      levels = c("unfiltered","filtered")),
+                       )) +
   geom_histogram(binwidth = 10
                  , position = "identity"
+                 , color = "black"
   ) +
-  scale_x_continuous(breaks = seq(1800, 2020, 20)) +
-  labs(title = "Santa Catalinas Mammal Occurrence Records Per Year",
-       fill = "Basis of Record", alpha = "Filtering Status") +
+  scale_x_continuous(breaks = seq(1870, 2020, 20)) +
+  labs(fill = "Filtering Status") +
   xlab("Decade") +
-  ylab("Number of Records") +
+  ylab("Number of Preserved Specimens") +
   scale_fill_manual(values = decadal_cols, drop = FALSE) +
-  scale_color_manual(values = decadal_cols) +
-  scale_alpha_manual(values = c("unfiltered" = 0, "filtered" = 0.5),
-                     labels = c("unfiltered", "filtered")) +
-  guides(color = "none") +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank())
 
