@@ -263,7 +263,7 @@ sd_prune_smallmamm<-sd_prune_no_outliers %>%
 
 ###The following file contains all unique small mammal records from all data 
 ####sources, post filtering for data quality
-write.csv(sd_prune_smallmamm, file = "Santa Catalinas Filtered Small Mammal Records.csv")
+# write.csv(sd_prune_smallmamm, file = "Santa Catalinas Filtered Small Mammal Records.csv")
 
 sd_prune_smallmamm %>%
   group_by(basisOfRecord) %>%
