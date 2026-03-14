@@ -385,7 +385,7 @@ sd_prune_smallmamm %>%
 #   theme(axis.text.y = element_text(face = "italic"),
 #         strip.placement = "outside")
 ###Sample by year
-sd_prune_no_smallmamm %>%
+sd_prune_smallmamm %>%
   ggplot(mapping = aes(x = as.numeric(format(eventDate, "%Y")), fill = basisOfRecord)) +
   geom_histogram(binwidth = 1, position = "identity", alpha = 0.7) +
   scale_x_continuous(breaks = seq(1875, 2025, 20)) +
