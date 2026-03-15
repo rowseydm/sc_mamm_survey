@@ -1,8 +1,41 @@
 # Code to summarize Santa Catalinas data
 #####
 
+# FIG 2 - summary of all sampling
+######
+setwd("/Users/unathan/ASU\ Dropbox/Nathan\ Upham/PROJECTS/SantaCatalinas_project/MS_2024-2025/sc_mamm_survey/Figures/Fig2_samplingSummary")
+
+allDat<-read.csv("AllMammalRecords_2021-23_Refined.csv")
+
+prepListRaw<-as.data.frame(table(allDat$preparations))[order(as.data.frame(table(allDat$preparations))[,2], decreasing=TRUE),]
+
+write.csv(prepListRaw, file="AllMammalRecords_2021-23_Refined_prepListRaw.csv")
+
+# read back in the cleaned data
+prepListCleaned<-read.csv(file="AllMammalRecords_2021-23_Refined_prepListCleaned.csv")
+dat<-prepListCleaned
+dat_rev <- dat[nrow(dat):1, ]
+
+# PLOT these data
+pdf(file="plot_prepListCleaned.pdf", width=6, height=6)
+	barplot(
+	  height = dat_rev$Freq,
+	  names.arg = dat_rev$Var1,
+	  horiz = TRUE,
+	  xlab = "Frequency",
+	  ylab = "Category",
+	  las = 1
+	)
+dev.off()
+
+
+
+
+
+# FIG 5 -- Moore et al. 2013 + Meyer et al. 2015 comparison
+######
 #setwd("/Users/n8upham/ASU\ Dropbox/Nathan\ Upham/PROJECTS/SantaCatalinas_project/MS_2024-2025/sc_mamm_survey/Fig5_compareToPlants")
-setwd("/Users/unathan/ASU\ Dropbox/Nathan\ Upham/PROJECTS/SantaCatalinas_project/MS_2024-2025/sc_mamm_survey/Fig5_compareToPlants")
+setwd("/Users/unathan/ASU\ Dropbox/Nathan\ Upham/PROJECTS/SantaCatalinas_project/MS_2024-2025/sc_mamm_survey/Figures/Fig5_compareToPlants")
 
 allDat<-read.csv("AllMammalRecords_2021-23_Refined.csv")
 
@@ -41,21 +74,84 @@ allSamplesBySite<-as.data.frame(table(allDat$site))
 allVoucherDat<-allDat[which(allDat$basisOfRecord=="PRESERVED_SPECIMEN"),]
 # 150 records
 
-allVouchersBySite<-as.data.frame(table(allVoucherDat$site))
+	allVouchersBySite<-as.data.frame(table(allVoucherDat$site))
+	#    Var1 Freq
+	# 1   CFN    7
+	# 2   CFP   18
+	# 3   CFS   19
+	# 4   ICN   13
+	# 5   ICS    4
+	# 6   OWN   12
+	# 7   OWS    9
+	# 8   SDS   35
+	# 9   SGN   17
+	# 10  SGS   16
 
-#    Var1 Freq
-# 1   CFN    7
-# 2   CFP   18
-# 3   CFS   19
-# 4   ICN   13
-# 5   ICS    4
-# 6   OWN   12
-# 7   OWS    9
-# 8   SDS   35
-# 9   SGN   17
-# 10  SGS   16
+	allVouchersSex<-as.data.frame(table(allVoucherDat$sex))
+
+	#   Var1 Freq
+	# 1    f   76
+	# 2    m   73 << 74
+	# 3    M    1
 
 
+allNonlethalDat<-allDat[!is.na(allDat$basisOfRecord) &
+  						!is.na(allDat$preparations) &
+  						allDat$basisOfRecord == "MATERIAL_SAMPLE" &
+  						allDat$preparations == "ear",]
+
+	allNonlethalBySite<-as.data.frame(table(allNonlethalDat$site))
+	#    Var1 Freq
+	# 1   CFN   26
+	# 2   CFP   41
+	# 3   CFS   26
+	# 4   ICN    4
+	# 5   ICS   16
+	# 6   OWN   29
+	# 7   OWS   29
+	# 8   SDS   27
+	# 9   SGN    2
+	# 10  SGS   17
+
+	allNonlethalSex<-as.data.frame(table(allNonlethalDat$sex))
+	#   Var1 Freq
+	# 1    unk  6
+	# 2    f  114
+	# 3    m   97
+	
+
+# Combined lethal + non-lethal sampling
+	sumDat<-cbind.data.frame(site=allVouchersBySite[,1],lethal=allVouchersBySite[,2],nonLethal=allNonlethalBySite[,2], total=(allVouchersBySite[,2]+allNonlethalBySite[,2]), trapSuccess=(allVouchersBySite[,2]+allNonlethalBySite[,2])/400)
+
+	sumDat_ordered<-sumDat[c(8,10,5,7,3,2,1,6,4,9),]
+
+	write.csv(sumDat_ordered, file="AllMammalRecords_2021-23_Refined_sumSampling-lethal-non.csv")
+
+	#    site lethal nonLethal total trapSuccess
+	# 8   SDS     35        27    62      0.1550
+	# 10  SGS     16        17    33      0.0825
+	# 5   ICS      4        16    20      0.0500
+	# 7   OWS      9        29    38      0.0950
+	# 3   CFS     19        26    45      0.1125
+	# 2   CFP     18        41    59      0.1475
+	# 1   CFN      7        26    33      0.0825
+	# 6   OWN     12        29    41      0.1025
+	# 4   ICN     13         4    17      0.0425
+	# 9   SGN     17         2    19      0.0475
+
+# PLOT sites -- lethal vs non-lethal
+totalScale<-10*(sumDat_ordered$total / max(sumDat_ordered$total) )
+voucherScale<-10*(sumDat_ordered$lethal / max(sumDat_ordered$total) )
+
+pdf(file="plot_sumSampling-lethal-vs-nonlethal.pdf", width=4, height=6)
+	plot(x=1:10, y=c(1:6,5:2), cex=totalScale, xpd=NA, xaxt="n", yaxt="n", bty="n",xlab="",ylab="")
+	points(x=1:10, y=c(1:6,5:2), cex=voucherScale, pch=20, xpd=NA)
+	text(x=1:10, y=c(1:6,5:2), labels=sumDat_ordered$site, adj=0.3)
+dev.off()
+
+
+# Sum species richness
+#####
 listOfSites<-as.vector(allVouchersBySite$Var1)
 allSpp<-list(length(listOfSites))
 whichSpp<-list(length(listOfSites))
@@ -86,6 +182,8 @@ finalDat<-cbind.data.frame(listOfSites, numSpp_ALL)
 # PLOTTING
 ######
 
+# PART A
+#######
 # Read back in data joined to Moore et al. 2013, Table 6
 #######
 datJoined<-read.csv("AllMammalSpecies-bySite_joinToMooreEtAl-Table6_DATA.csv")
@@ -120,9 +218,9 @@ Y.LAB<-"Mammal species richness (our survey)"
 
 pdf("AllMammalSpecies-bySite_joinToMooreEtAl_mam-v-allPlant_clean_noLine.pdf")
 
-	plot(datJoined$numSpp_mammalsAll ~ X.VAR, type="n",data=datJoined, xlab=X.LAB, ylab=Y.LAB)
-	points(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined, cex=2, pch=20)
-	text(y=datJoined$numSpp_mammalsAll, x=X.VAR, labels=datJoined$Site, adj=-0.2)
+	plot(datJoined$numSpp_mammalsAll ~ X.VAR, type="n",data=datJoined, xlab=X.LAB, ylab=Y.LAB) # plotting the axes (no points)
+	points(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined, cex=2, pch=20)	# plotting points
+	text(y=datJoined$numSpp_mammalsAll, x=X.VAR, labels=datJoined$Site, adj=-0.2) # adding labels to point (site names)
 
 	abline(a=TEST2$coefficients[[1]], b=TEST2$coefficients[[2]])
 	#mtext(text= paste0("Y = ",round(TEST2$coefficients[[1]],3), " + ",round(TEST2$coefficients[[2]],3)," X"), 
@@ -309,19 +407,184 @@ pdf("AllMammalSpecies-bySite_joinToMooreEtAl_plant-v-elevMid_clean.pdf")
 
 dev.off()
 
+# ELEV MID... VS ALL -- as SPLINES....
+####
 
 
 
 
 
-# 	Spearman's rank correlation rho
-# 
-# data:  datJoined$numSpp_plantsAll and datJoined$numSpp_mammalsAll
-# S = 47.85, p-value = 0.02142
-# alternative hypothesis: true rho is not equal to 0
-# sample estimates:
-#       rho 
-# 0.7099983 
+# PART B
+#######
+# Read back in data joined to Meyer at al. 2015, S2 Data
+#######
+datJoined<-read.csv("AllMammalSpecies-bySite_joinToMeyerEtAl-S2data_DATA.csv")
+
+
+# ALL ARTHROPODS
+####
+X.VAR<-datJoined$TOTAL_SPP
+X.LAB<-"Arthropod species richness - all (Meyer et al. 2015)"
+Y.LAB<-"Mammal species richness (our survey)"
+
+	TEST<-cor.test(x=X.VAR, y=datJoined$numSpp_mammalsAll,
+              alternative = c("two.sided"),
+              method = c("spearman"), conf.level = 0.95)
+	TEST$estimate[[1]]
+	TEST$p.value[[1]]
+	#[1] 0.790259
+	#[1] 0.006516335
+
+	TEST2<-lm(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined)
+	TEST2$coefficients[[1]]
+	TEST2$coefficients[[2]]
+    #           (Intercept)  datJoined$TOTAL_SPP  
+	#		       -0.56018      0.06333 
+
+
+pdf("AllMammalSpecies-bySite_joinToMeyerEtAl_mam-v-allArthropod.pdf")
+
+	plot(datJoined$numSpp_mammalsAll ~ X.VAR, type="n",data=datJoined, xlab=X.LAB, ylab=Y.LAB) # plotting the axes (no points)
+	points(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined, cex=2, pch=20)	# plotting points
+	text(y=datJoined$numSpp_mammalsAll, x=X.VAR, labels=datJoined$Site, adj=-0.2) # adding labels to point (site names)
+
+	abline(a=TEST2$coefficients[[1]], b=TEST2$coefficients[[2]])
+	#mtext(text= paste0("Y = ",round(TEST2$coefficients[[1]],3), " + ",round(TEST2$coefficients[[2]],3)," X"), 
+	#	side=3, line= -2, adj=0.1)
+	mtext(text= paste0("r = ",round(TEST$estimate[[1]],3), "; P = ",round(TEST$p.value[[1]],3)), 
+		side=3, line= -2, adj=0.1, font=3)
+
+dev.off()
+
+
+# Orthoptera
+####
+X.VAR<-datJoined$Orthoptera
+X.LAB<-"Orthoptera species richness (Meyer et al. 2015)"
+Y.LAB<-"Mammal species richness (our survey)"
+
+	TEST<-cor.test(x=X.VAR, y=datJoined$numSpp_mammalsAll,
+              alternative = c("two.sided"),
+              method = c("spearman"), conf.level = 0.95)
+	TEST$estimate[[1]]
+	TEST$p.value[[1]]
+	#[1] 0.4130408
+	#[1] 0.2354798
+
+	TEST2<-lm(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined)
+
+pdf("AllMammalSpecies-bySite_joinToMeyerEtAl_mam-v-Orthoptera.pdf")
+
+	plot(datJoined$numSpp_mammalsAll ~ X.VAR, type="n",data=datJoined, xlab=X.LAB, ylab=Y.LAB) # plotting the axes (no points)
+	points(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined, cex=2, pch=20)	# plotting points
+	text(y=datJoined$numSpp_mammalsAll, x=X.VAR, labels=datJoined$Site, adj=-0.2) # adding labels to point (site names)
+
+	abline(a=TEST2$coefficients[[1]], b=TEST2$coefficients[[2]])
+	#mtext(text= paste0("Y = ",round(TEST2$coefficients[[1]],3), " + ",round(TEST2$coefficients[[2]],3)," X"), 
+	#	side=3, line= -2, adj=0.1)
+	mtext(text= paste0("r = ",round(TEST$estimate[[1]],3), "; P = ",round(TEST$p.value[[1]],3)), 
+		side=3, line= -2, adj=0.1, font=3)
+
+dev.off()
+
+# Myriapoda
+####
+X.VAR<-datJoined$Myriapoda
+X.LAB<-"Myriapoda species richness (Meyer et al. 2015)"
+Y.LAB<-"Mammal species richness (our survey)"
+
+	TEST<-cor.test(x=X.VAR, y=datJoined$numSpp_mammalsAll,
+              alternative = c("two.sided"),
+              method = c("spearman"), conf.level = 0.95)
+	TEST$estimate[[1]]
+	TEST$p.value[[1]]
+	#[1] 0.08254343
+	#[1] 0.8206615
+
+	TEST2<-lm(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined)
+
+pdf("AllMammalSpecies-bySite_joinToMeyerEtAl_mam-v-Myriapoda.pdf")
+
+	plot(datJoined$numSpp_mammalsAll ~ X.VAR, type="n",data=datJoined, xlab=X.LAB, ylab=Y.LAB) # plotting the axes (no points)
+	points(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined, cex=2, pch=20)	# plotting points
+	text(y=datJoined$numSpp_mammalsAll, x=X.VAR, labels=datJoined$Site, adj=-0.2) # adding labels to point (site names)
+
+	abline(a=TEST2$coefficients[[1]], b=TEST2$coefficients[[2]])
+	#mtext(text= paste0("Y = ",round(TEST2$coefficients[[1]],3), " + ",round(TEST2$coefficients[[2]],3)," X"), 
+	#	side=3, line= -2, adj=0.1)
+	mtext(text= paste0("r = ",round(TEST$estimate[[1]],3), "; P = ",round(TEST$p.value[[1]],3)), 
+		side=3, line= -2, adj=0.1, font=3)
+
+dev.off()
+
+# Coleoptera
+####
+X.VAR<-datJoined$Coleoptera
+X.LAB<-"Coleoptera species richness (Meyer et al. 2015)"
+Y.LAB<-"Mammal species richness (our survey)"
+
+	TEST<-cor.test(x=X.VAR, y=datJoined$numSpp_mammalsAll,
+              alternative = c("two.sided"),
+              method = c("spearman"), conf.level = 0.95)
+	TEST$estimate[[1]]
+	TEST$p.value[[1]]
+	#[1] 0.6894942
+	#[1] 0.0273886
+
+	TEST2<-lm(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined)
+
+pdf("AllMammalSpecies-bySite_joinToMeyerEtAl_mam-v-Coleoptera.pdf")
+
+	plot(datJoined$numSpp_mammalsAll ~ X.VAR, type="n",data=datJoined, xlab=X.LAB, ylab=Y.LAB) # plotting the axes (no points)
+	points(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined, cex=2, pch=20)	# plotting points
+	text(y=datJoined$numSpp_mammalsAll, x=X.VAR, labels=datJoined$Site, adj=-0.2) # adding labels to point (site names)
+
+	abline(a=TEST2$coefficients[[1]], b=TEST2$coefficients[[2]])
+	#mtext(text= paste0("Y = ",round(TEST2$coefficients[[1]],3), " + ",round(TEST2$coefficients[[2]],3)," X"), 
+	#	side=3, line= -2, adj=0.1)
+	mtext(text= paste0("r = ",round(TEST$estimate[[1]],3), "; P = ",round(TEST$p.value[[1]],3)), 
+		side=3, line= -2, adj=0.1, font=3)
+
+dev.off()
+
+# Araneae
+####
+X.VAR<-datJoined$Araneae
+X.LAB<-"Araneae species richness (Meyer et al. 2015)"
+Y.LAB<-"Mammal species richness (our survey)"
+
+	TEST<-cor.test(x=X.VAR, y=datJoined$numSpp_mammalsAll,
+              alternative = c("two.sided"),
+              method = c("spearman"), conf.level = 0.95)
+	TEST$estimate[[1]]
+	TEST$p.value[[1]]
+	#[1] 0.7895683
+	#[1] 0.006596672
+
+	TEST2<-lm(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined)
+
+pdf("AllMammalSpecies-bySite_joinToMeyerEtAl_mam-v-Araneae.pdf")
+
+	plot(datJoined$numSpp_mammalsAll ~ X.VAR, type="n",data=datJoined, xlab=X.LAB, ylab=Y.LAB) # plotting the axes (no points)
+	points(datJoined$numSpp_mammalsAll ~ X.VAR, data=datJoined, cex=2, pch=20)	# plotting points
+	text(y=datJoined$numSpp_mammalsAll, x=X.VAR, labels=datJoined$Site, adj=-0.2) # adding labels to point (site names)
+
+	abline(a=TEST2$coefficients[[1]], b=TEST2$coefficients[[2]])
+	#mtext(text= paste0("Y = ",round(TEST2$coefficients[[1]],3), " + ",round(TEST2$coefficients[[2]],3)," X"), 
+	#	side=3, line= -2, adj=0.1)
+	mtext(text= paste0("r = ",round(TEST$estimate[[1]],3), "; P = ",round(TEST$p.value[[1]],3)), 
+		side=3, line= -2, adj=0.1, font=3)
+
+dev.off()
+
+
+   # >>> Looks especially driven by spiders and beetles!
+
+
+
+
+
+
 
 
 # Colors from other Figs

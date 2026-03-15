@@ -1,0 +1,18 @@
+﻿Var1,FreqRaw,Cat
+alc | tiss,120,lethal_body
+skin | skull | skel | tiss,30,lethal_body
+kidney,169,lethal
+liver,167,lethal
+skeletal muscle,148,lethal
+blood,139,lethal
+lung,144,lethal
+heart,141,lethal
+Whole GI,42,lethal
+endoparasites,4,lethal
+spleen,3,lethal
+feces-lethal,136,lethal
+ectos-lethal,92,lethal
+feces-nonlethal,197,non-lethal
+ectos-nonlethal,32,non-lethal
+ear,217,non-lethal
+tail only (in trap),4,non-lethal
